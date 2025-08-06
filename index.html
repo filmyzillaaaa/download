@@ -1,63 +1,121 @@
 <!DOCTYPE html>
 <html lang="hi">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>Facebook से कमाएं लाखों रुपये घर बैठे – अभी तरीका जानें</title>
-
-  <!-- Open Graph (Preview for Social Media) -->
-  <meta property="og:title" content="Facebook से कमाएं लाखों रुपये घर बैठे – अभी तरीका जानें" />
-  <meta property="og:description" content="अब फेसबुक से घर बैठे पैसे कमाना हुआ आसान। जानिए वो तरीका जिससे लाखों लोग कमा रहे हैं।" />
-  <meta property="og:image" content="https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcSAfM91NjiIHoS5bMnZ0uJjdDBa1a-A_mc95jl8NHfVGXPofIZsZpL4ElbF&s=10" />
-  <meta property="og:url" content="https://gyanipanda.com/facebook-paise-kaise-kamaye" />
-  <meta name="twitter:card" content="summary_large_image" />
-
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Make Money Online</title>
+  <meta property="og:image" content="https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcSAfM91NjiIHoS5bMnZ0uJjdDBa1a-A_mc95jl8NHfVGXPofIZsZpL4ElbF&s=10"/>
+  <meta property="og:title" content="Facebook से पैसे कमाएँ - आज़माएँ ये 187 आसान ट्रिक्स!"/>
   <style>
     body {
       margin: 0;
-      padding: 0;
-      font-family: Arial, sans-serif;
+      font-family: 'Segoe UI', sans-serif;
+      background: linear-gradient(to top right, #f1f1f1, #ffffff);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      height: 100vh;
+      position: relative;
+    }
+
+    .main {
       text-align: center;
-      background-color: #f7f7f7;
-      cursor: pointer;
+      width: 100%;
+      height: 100%;
+      position: absolute;
+      top: 0;
+      left: 0;
     }
-    .container {
-      padding: 20px;
-    }
+
     img {
-      max-width: 100%;
+      max-width: 90%;
       height: auto;
-      border-radius: 10px;
+      border-radius: 12px;
+      box-shadow: 0 4px 10px rgba(0,0,0,0.1);
+      margin-top: 60px;
     }
+
     h1 {
-      font-size: 24px;
+      font-size: 22px;
       margin-top: 20px;
-      color: #333;
+      color: #111;
     }
-    p {
+
+    .popup {
+      display: none;
+      position: fixed;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      background: #ffffff;
+      border-radius: 12px;
+      box-shadow: 0 4px 10px rgba(0,0,0,0.2);
+      padding: 30px;
+      text-align: center;
+      z-index: 999;
+    }
+
+    .popup h2 {
+      margin-bottom: 20px;
       font-size: 18px;
-      color: #555;
+    }
+
+    .popup button {
+      background: #4CAF50;
+      color: white;
+      padding: 10px 20px;
+      border: none;
+      border-radius: 8px;
+      cursor: pointer;
+      font-size: 16px;
+    }
+
+    .overlay {
+      display: none;
+      position: fixed;
+      top: 0; left: 0;
+      width: 100%; height: 100%;
+      background: rgba(0,0,0,0.3);
+      z-index: 998;
     }
   </style>
 </head>
-<body onclick="startRedirect()">
+<body>
 
-  <div class="container">
-    <img src="https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcSAfM91NjiIHoS5bMnZ0uJjdDBa1a-A_mc95jl8NHfVGXPofIZsZpL4ElbF&s=10" alt="Facebook से पैसे कमाने का तरीका">
-    <h1>Facebook से कमाएं लाखों रुपये घर बैठे – अभी तरीका जानें</h1>
-    <p>अब फेसबुक से पैसे कमाना आसान है। जानिए पूरी जानकारी और तरीका।</p>
+  <div class="main" id="click-area">
+    <img src="https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcSAfM91NjiIHoS5bMnZ0uJjdDBa1a-A_mc95jl8NHfVGXPofIZsZpL4ElbF&s=10" alt="Make Money" />
+    <h1>Facebook से पैसे कमाएँ - आज़माएँ ये 187 आसान ट्रिक्स!</h1>
+  </div>
+
+  <div class="overlay" id="overlay"></div>
+  <div class="popup" id="popup">
+    <h2>💰 Make Money Online – 187 Tricks and Tips</h2>
+    <button onclick="redirectNow()">🚀 Start</button>
   </div>
 
   <script>
-    let redirected = false;
-    function startRedirect() {
-      if (redirected) return;
-      redirected = true;
-      setTimeout(() => {
-        // ये वही URL है जहाँ आप redirect करना चाहते हैं:
-        window.location.href = "https://gyanipanda.com/facebook-paise-kaise-kamaye";
-      }, 1000); // 1 second delay
+    let hasClicked = false;
+
+    // Function to redirect
+    function redirectNow() {
+      window.location.href = "https://gyanipanda.com";
     }
+
+    // On full screen click
+    document.getElementById("click-area").addEventListener("click", () => {
+      if (!hasClicked) {
+        hasClicked = true;
+        setTimeout(redirectNow, 1000);
+      }
+    });
+
+    // Show popup if user is idle for 2 sec
+    setTimeout(() => {
+      if (!hasClicked) {
+        document.getElementById("popup").style.display = "block";
+        document.getElementById("overlay").style.display = "block";
+      }
+    }, 2000);
   </script>
 
 </body>
