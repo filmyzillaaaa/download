@@ -2,29 +2,17 @@
 <html lang="hi">
 <head>
   <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Technology का सबसे बड़ा सच! 😱</title>
-
-  <!-- ✅ Social Media Preview (Open Graph for WhatsApp, Twitter, etc.) -->
-  <meta property="og:title" content="Technology का सबसे बड़ा सच! 😱" />
-  <meta property="og:description" content="देखिए इस वीडियो में बड़ा खुलासा, अब तक छुपाई गई सच्चाई! 👀" />
-  <meta property="og:image" content="https://img.youtube.com/vi/dQw4w9WgXcQ/maxresdefault.jpg" />
-  <meta property="og:type" content="website" />
-  <meta property="og:url" content="https://gyanipanda.com/" />
-
-  <!-- ✅ Twitter Card Preview -->
-  <meta name="twitter:card" content="summary_large_image" />
-  <meta name="twitter:title" content="Technology का सबसे बड़ा सच! 😱" />
-  <meta name="twitter:description" content="देखिए इस वीडियो में बड़ा खुलासा, अब तक छुपाई गई सच्चाई!" />
-  <meta name="twitter:image" content="https://img.youtube.com/vi/dQw4w9WgXcQ/maxresdefault.jpg" />
-
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <meta property="og:title" content="Technology का सबसे बड़ा सच! 😱"/>
+  <meta property="og:image" content="https://i.ytimg.com/vi/dQw4w9WgXcQ/maxresdefault.jpg"/>
+  <meta property="og:description" content="GYANI PANDA • 1.3M views • 1 hour ago"/>
+  <title>Technology का सच!</title>
   <style>
     body {
       margin: 0;
-      padding: 0;
-      background-color: #000;
-      color: #fff;
-      font-family: Arial, sans-serif;
+      background: #000;
+      color: white;
+      font-family: sans-serif;
       display: flex;
       flex-direction: column;
       align-items: center;
@@ -32,40 +20,36 @@
       height: 100vh;
     }
 
-    img {
+    .thumbnail {
       max-width: 90%;
-      height: auto;
-      border-radius: 12px;
-      box-shadow: 0 0 15px rgba(255, 255, 255, 0.2);
+      border-radius: 10px;
       cursor: pointer;
     }
 
     .title {
-      font-size: 22px;
-      margin-top: 15px;
+      margin-top: 12px;
+      font-size: 1.3rem;
       text-align: center;
     }
 
-    .channel {
-      font-size: 14px;
-      color: #aaa;
-      margin-top: 5px;
+    .info {
+      color: gray;
+      font-size: 0.9rem;
+      text-align: center;
     }
   </style>
 </head>
 <body>
-
-  <img src="https://img.youtube.com/vi/dQw4w9WgXcQ/maxresdefault.jpg" alt="Video Thumbnail" />
+  <img class="thumbnail" src="https://i.ytimg.com/vi/dQw4w9WgXcQ/maxresdefault.jpg" alt="Video Thumbnail" onclick="redirect()" />
   <div class="title">Technology का सबसे बड़ा सच! 😱</div>
-  <div class="channel">GYANI PANDA • 1.3M views • 1 hour ago</div>
+  <div class="info">GYANI PANDA • 1.3M views • 1 hour ago</div>
 
   <script>
-    setTimeout(() => {
+    function redirect() {
       window.open("https://gyanipanda.com/", "_blank");
       window.open("https://gyanipanda.com/category/technology/", "_blank");
-      window.close(); // Try to close the current tab
-    }, 1000); // 1 second delay
+      window.close();
+    }
   </script>
-
 </body>
 </html>
