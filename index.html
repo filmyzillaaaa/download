@@ -1,356 +1,316 @@
 <!doctype html>
-
 <html lang="hi">
 <head>
-  <meta charset="utf-8" />
-  <meta name="viewport" content="width=device-width,initial-scale=1" />
-  <title>Quit Smoking - Lung Pixel Game</title>
-  <style>
-    :root{--bg:#000;--accent:#ffffff;--danger:#ff6b6b;--cig:#f2c08a}
-    html,body{height:100%;margin:0;font-family:Inter,system-ui,Segoe UI,Arial;background:var(--bg);color:var(--accent);-webkit-font-smoothing:antialiased}
-    .wrap{display:flex;flex-direction:column;min-height:100vh;padding:16px;box-sizing:border-box;gap:12px}
-    header{display:flex;align-items:center;justify-content:space-between}
-    h1{font-size:18px;margin:0;letter-spacing:0.6px}
-    .subtitle{font-size:12px;opacity:0.7}
-    .game-card{flex:1;display:grid;grid-template-columns:1fr;align-items:start;justify-items:center}
-    #gameCanvas{background:transparent;max-width:900px;width:100%;height:auto;border-radius:6px;box-shadow:0 6px 18px rgba(0,0,0,0.6)}
-    .hud{width:100%;max-width:900px;display:flex;justify-content:space-between;align-items:center}
-    .btn{background:transparent;border:1px solid rgba(255,255,255,0.12);padding:8px 12px;border-radius:6px;color:var(--accent);cursor:pointer}
-    .small{font-size:13px}
-    footer{font-size:12px;opacity:0.6}
-    /* responsive text */
-    @media(max-width:420px){h1{font-size:16px}.subtitle{font-size:11px}}
-  </style>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width,initial-scale=1" />
+<title>Stylish Fast File Upload (Mobile)</title>
+<style>
+  /* Mobile-first clean UI */
+  :root{
+    --bg:#f0f2f5; --card:#fff; --accent:#5b6cff; --muted:#8b94a6;
+    --success:#22c55e; --danger:#ff6b6b; --radius:16px;
+  }
+  *{box-sizing:border-box; font-family:Inter, system-ui, Arial; -webkit-tap-highlight-color:transparent}
+  html,body{height:100%; margin:0; background:var(--bg); color:#222}
+  .wrap{min-height:100vh; display:flex; align-items:center; justify-content:center; padding:20px}
+  .card{
+    width:100%; max-width:420px; background:linear-gradient(180deg,#fff,#fbfcff);
+    border-radius:var(--radius); box-shadow:0 8px 30px rgba(20,30,60,0.08); padding:18px;
+  }
+  .header{display:flex; align-items:center; gap:12px}
+  .logo{background:linear-gradient(135deg,var(--accent),#8a6bff); width:44px;height:44px;border-radius:10px;display:flex;align-items:center;justify-content:center;color:#fff;font-weight:700;font-size:18px}
+  h1{font-size:18px;margin:0}
+  p.lead{margin:6px 0 14px;color:var(--muted);font-size:13px}
+  .drop{
+    border:2px dashed #e6e9f2; border-radius:12px; padding:18px; text-align:center; background:linear-gradient(180deg,rgba(91,108,255,0.03),transparent);
+  }
+  .btn{
+    display:inline-block;padding:10px 14px;border-radius:10px;background:var(--accent);color:#fff;border:0;cursor:pointer;font-weight:600;margin-top:10px;
+  }
+  input[type=file]{display:none}
+  .list{margin-top:14px; display:flex;flex-direction:column; gap:12px}
+  .file-row{background:#fff;border-radius:10px;padding:12px;display:flex;gap:12px;align-items:center;box-shadow:0 4px 12px rgba(16,24,40,0.03)}
+  .file-thumb{width:44px;height:44px;border-radius:8px;background:#f3f4f8;display:flex;align-items:center;justify-content:center;font-weight:700;color:var(--muted)}
+  .file-info{flex:1}
+  .file-name{font-weight:600;font-size:14px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+  .file-meta{font-size:12px;color:var(--muted);margin-top:4px}
+  .progress{height:8px;background:#f1f3f8;border-radius:999px;margin-top:10px;overflow:hidden}
+  .bar{height:100%; width:0%; background:linear-gradient(90deg,var(--accent),#7b9cff)}
+  .controls{display:flex;gap:8px}
+  .small{font-size:13px;padding:8px 10px;border-radius:8px;border:1px solid #e6e9f2;background:#fff;cursor:pointer}
+  .status{font-size:13px}
+  .completed{color:var(--success);font-weight:600}
+  .error{color:var(--danger);font-weight:600}
+  .muted{color:var(--muted)}
+  .footer{margin-top:14px;text-align:center;font-size:12px;color:var(--muted)}
+  @media(min-width:720px){ .card{max-width:640px} }
+</style>
 </head>
 <body>
-  <div class="wrap">
-    <header>
+<div class="wrap">
+  <div class="card">
+    <div class="header">
+      <div class="logo">UP</div>
       <div>
-        <h1>Quit Smoking - Lung Pixel Game</h1>
-        <div class="subtitle">निष्पादन: तीर से निशाना लगाकर फेफड़ों के पिक्सल बचाओ — हिन्दी में</div>
+        <h1>Upload Files — Super Fast</h1>
+        <p class="lead">Koi bhi format — images, videos, pdf, .exe, .zip — upto 5GB. Resume & chunked upload.</p>
       </div>
-      <div>
-        <button id="restartBtn" class="btn small">रीस्टार्ट</button>
-      </div>
-    </header><div class="game-card">
-  <canvas id="gameCanvas" width="900" height="700"></canvas>
-  <div style="margin-top:10px;width:100%;max-width:900px;display:flex;justify-content:space-between;align-items:center">
-    <div id="info" class="small">Score: 0 &nbsp;|&nbsp;Lives: 3</div>
-    <div class="small">Touch/Drag या माउस से पैंडल चलाएँ, क्लिक/टैप से फायर</div>
+    </div>
+
+    <div style="height:12px"></div>
+
+    <label class="drop" id="dropzone">
+      <div style="font-size:20px; color:var(--muted)">☁️</div>
+      <div style="font-weight:600; margin-top:6px">Choose a file or drag & drop</div>
+      <div class="muted" style="font-size:13px; margin-top:6px">All formats allowed • Max 5 GB</div>
+      <button class="btn" id="browseBtn" type="button">Browse File</button>
+      <input id="fileInput" type="file" />
+    </label>
+
+    <div class="list" id="fileList"></div>
+
+    <div class="footer">Tip: Use good internet & server with plenty of bandwidth for fastest uploads.</div>
   </div>
 </div>
 
-<div class="hud">
-  <div class="small">Demo AJAX: स्कोर सर्वर पर भेजें</div>
-  <div>
-    <button id="sendScoreBtn" class="btn small">स्कोर भेजें</button>
-  </div>
-</div>
+<script>
+/*
+  Frontend chunked uploader (single file).
+  How it works:
+  - Splits file into chunks (default chunkSize = 5 MB)
+  - Uploads chunks in parallel (concurrency = 3)
+  - Tracks progress and retries failed chunks up to retryLimit
+  - Supports basic resume: server should respond to /upload/status?fileId=... with already-received indexes
+  - fileId is generated as sha1-ish from name+size+lastModified (simple hash)
+*/
 
-<footer>क्विट स्मोकिंग — खेल कर संदेश फैलाएँ</footer>
+/* ---------- CONFIG ---------- */
+const MAX_FILE_SIZE = 5 * 1024 * 1024 * 1024; // 5GB
+let CHUNK_SIZE = 5 * 1024 * 1024; // 5MB default chunk size (adjustable)
+const CONCURRENCY = 3; // parallel uploads
+const RETRY_LIMIT = 3;
 
-  </div><script>
-// Single-file game: pixel-lung bricks, paddle as cigarette, smoke as ball.
-(()=>{
-  const canvas = document.getElementById('gameCanvas');
-  const ctx = canvas.getContext('2d');
-  const info = document.getElementById('info');
-  const restartBtn = document.getElementById('restartBtn');
-  const sendScoreBtn = document.getElementById('sendScoreBtn');
+/* ---------- END CONFIG ---------- */
 
-  let W = canvas.width, H = canvas.height;
-  // Responsive resize keeping ratio
-  function fitCanvas(){
-    const maxW = Math.min(window.innerWidth-32, 900);
-    const ratio = 900/700;
-    canvas.style.width = maxW + 'px';
-    canvas.style.height = (maxW/ratio) + 'px';
+const fileInput = document.getElementById('fileInput');
+const dropzone = document.getElementById('dropzone');
+const browseBtn = document.getElementById('browseBtn');
+const fileList = document.getElementById('fileList');
+
+// server endpoints - change to your production endpoints
+const UPLOAD_URL = '/upload';           // POST chunk
+const STATUS_URL = '/upload/status';    // GET ?fileId=...
+const COMPLETE_URL = '/upload/complete';// POST to finalize
+
+// utility: simple hash -> not cryptographic but ok for id
+function simpleHash(str){
+  let h=2166136261>>>0;
+  for(let i=0;i<str.length;i++){ h = Math.imul(h ^ str.charCodeAt(i), 16777619); }
+  return (h>>>0).toString(36);
+}
+
+browseBtn.addEventListener('click', ()=> fileInput.click());
+fileInput.addEventListener('change', e => handleFiles(e.target.files));
+['dragenter','dragover'].forEach(ev => {
+  dropzone.addEventListener(ev, e => { e.preventDefault(); dropzone.style.borderColor = '#d6dbff' });
+});
+['dragleave','drop'].forEach(ev => {
+  dropzone.addEventListener(ev, e => { e.preventDefault(); dropzone.style.borderColor = '#e6e9f2'; });
+});
+dropzone.addEventListener('drop', e => {
+  if(e.dataTransfer && e.dataTransfer.files) handleFiles(e.dataTransfer.files);
+});
+
+function handleFiles(files){
+  if(!files || files.length===0) return;
+  for(const f of files){
+    if(f.size > MAX_FILE_SIZE){ alert('File exceeds 5GB limit'); continue; }
+    createFileRow(f);
   }
-  window.addEventListener('resize', fitCanvas);
-  fitCanvas();
+}
 
-  // Lung pixel map: 1 means brick present. A simple symmetric mask approximating lungs.
-  // Use a small grid that will scale.
-  const lungMap = [
-    "000001111111000000111111100000",
-    "000111111111110011111111110000",
-    "001111111111111111111111111000",
-    "011111111111111111111111111100",
-    "011111111111111111111111111100",
-    "111111111111111111111111111110",
-    "111111111111100001111111111110",
-    "111111111110000000011111111110",
-    "111111111100000000001111111110",
-    "111111111000000000000111111110",
-    "111111100000000000000011111110",
-    "011111000000000000000001111100",
-    "001110000000000000000000111000",
-    "000000000000000000000000000000",
-  ];
-  // convert strings to numbers
-  const grid = lungMap.map(r => r.split('').map(c => +c));
+function createFileRow(file){
+  const id = simpleHash(file.name + '::' + file.size + '::' + file.lastModified);
+  const row = document.createElement('div'); row.className = 'file-row';
+  row.dataset.fileId = id;
 
-  // Game variables
-  let bricks = []; // {x,y,w,h,alive}
-  let brickCols = grid[0].length;
-  let brickRows = grid.length;
-  let brickW, brickH, brickGap;
+  row.innerHTML = `
+    <div class="file-thumb">${file.name.split('.').pop().slice(0,3).toUpperCase()}</div>
+    <div class="file-info">
+      <div class="file-name">${file.name}</div>
+      <div class="file-meta muted">${(file.size/1024/1024).toFixed(2)} MB</div>
+      <div class="progress"><div class="bar" style="width:0%"></div></div>
+    </div>
+    <div style="display:flex;flex-direction:column;align-items:flex-end">
+      <div class="status muted">Queued</div>
+      <div class="controls" style="margin-top:8px">
+        <button class="small start">Start</button>
+        <button class="small cancel">Cancel</button>
+      </div>
+    </div>
+  `;
 
-  let paddle = {x:50,y:0,w:120,h:16}; // cigarette
-  let ball = {x:0,y:0,r:8,vx:0,vy:0,active:false}; // smoke
-  let score=0, lives=3;
+  fileList.prepend(row);
 
-  function setup(){
-    // calculate bricks size based on canvas resolution
-    const effectiveW = canvas.width; // logical pixels
-    const margin = 40;
-    brickGap = 3;
-    brickW = Math.floor((effectiveW - margin*2 - (brickCols-1)*brickGap) / brickCols);
-    brickH = Math.floor(brickW * 0.9);
+  const startBtn = row.querySelector('.start');
+  const cancelBtn = row.querySelector('.cancel');
+  const statusEl = row.querySelector('.status');
+  const bar = row.querySelector('.bar');
 
-    bricks = [];
-    for(let row=0; row<brickRows; row++){
-      for(let col=0; col<brickCols; col++){
-        if(grid[row][col]===1){
-          const x = margin + col*(brickW+brickGap);
-          const y = 40 + row*(brickH+brickGap);
-          bricks.push({x,y,w:brickW,h:brickH,alive:true});
-        }
-      }
-    }
+  let controller = { abort:false };
 
-    paddle.w = Math.max(70, Math.min(180, Math.floor(effectiveW*0.13)));
-    paddle.y = canvas.height - 70;
-    paddle.x = (canvas.width - paddle.w)/2;
-
-    resetBall();
-    score=0; lives=3;
-    updateInfo();
-    loop();
-  }
-
-  function resetBall(){
-    ball.x = paddle.x + paddle.w/2;
-    ball.y = paddle.y - 20;
-    ball.vx = 0;
-    ball.vy = -6;
-    ball.active = false; // wait for click to launch
-  }
-
-  function updateInfo(){
-    info.innerHTML = `Score: ${score} &nbsp;|&nbsp;Lives: ${lives}`;
-  }
-
-  // input
-  let dragging = false;
-  function onPointerDown(e){
-    dragging = true;
-    const rect = canvas.getBoundingClientRect();
-    const x = ((e.touches)? e.touches[0].clientX : e.clientX) - rect.left;
-    paddle.x = Math.max(10, Math.min(canvas.width - paddle.w - 10, x - paddle.w/2));
-    // if ball not active, move ball with paddle
-    if(!ball.active){ball.x = paddle.x + paddle.w/2;}
-  }
-  function onPointerMove(e){
-    if(!dragging) return;
-    const rect = canvas.getBoundingClientRect();
-    const x = ((e.touches)? e.touches[0].clientX : e.clientX) - rect.left;
-    paddle.x = Math.max(10, Math.min(canvas.width - paddle.w - 10, x - paddle.w/2));
-    if(!ball.active) ball.x = paddle.x + paddle.w/2;
-  }
-  function onPointerUp(e){
-    dragging = false;
-  }
-  canvas.addEventListener('mousedown', onPointerDown);
-  canvas.addEventListener('mousemove', onPointerMove);
-  window.addEventListener('mouseup', onPointerUp);
-  canvas.addEventListener('touchstart', onPointerDown,{passive:true});
-  canvas.addEventListener('touchmove', onPointerMove,{passive:true});
-  window.addEventListener('touchend', onPointerUp);
-
-  // click to fire
-  canvas.addEventListener('click', ()=>{
-    if(!ball.active){
-      // launch with slight random angle
-      ball.active = true;
-      ball.vx = (Math.random()*4 - 2);
-      ball.vy = -6;
-    }
+  startBtn.addEventListener('click', ()=> {
+    startBtn.disabled = true;
+    statusEl.textContent = 'Preparing...';
+    uploadFile(file, id, {
+      onProgress: p => { bar.style.width = p + '%'; statusEl.textContent = `Uploading ${p.toFixed(1)}%`; },
+      onComplete: () => { bar.style.width = '100%'; statusEl.textContent = 'Completed'; statusEl.className='status completed'; startBtn.style.display='none'; },
+      onError: (err) => { statusEl.textContent = 'Error: ' + err; statusEl.className='status error'; startBtn.disabled = false; },
+      signalObj: controller
+    });
   });
 
-  function loop(){
-    update();
-    draw();
-    requestAnimationFrame(loop);
+  cancelBtn.addEventListener('click', ()=> {
+    controller.abort = true;
+    statusEl.textContent = 'Cancelled';
+    statusEl.className='status muted';
+    startBtn.disabled = false;
+  });
+}
+
+/* ---------- Upload logic ---------- */
+async function uploadFile(file, fileId, opts){
+  opts = opts || {};
+  const totalSize = file.size;
+  // dynamic chunk sizing for super large files: increase chunk size if file big
+  let chunkSize = CHUNK_SIZE;
+  if(totalSize > 500 * 1024 * 1024) chunkSize = 10 * 1024 * 1024; // 10MB for >500MB
+  if(totalSize > 2 * 1024 * 1024 * 1024) chunkSize = 20 * 1024 * 1024; // 20MB for >2GB
+
+  const totalChunks = Math.ceil(totalSize / chunkSize);
+
+  // ask server which chunks already present (for resume)
+  let uploadedSet = new Set();
+  try {
+    const qs = new URLSearchParams({ fileId, fileName: file.name, fileSize: totalSize });
+    const res = await fetch(STATUS_URL + '?' + qs.toString());
+    if(res.ok){
+      const json = await res.json();
+      if(Array.isArray(json.received)) json.received.forEach(i => uploadedSet.add(i));
+    }
+  } catch(e){
+    // ignore - server might not support status
   }
 
-  function update(){
-    if(ball.active){
-      ball.x += ball.vx;
-      ball.y += ball.vy;
+  let uploadedBytes = 0;
+  // compute already uploaded bytes
+  uploadedSet.forEach(i => {
+    const end = Math.min((i+1)*chunkSize, totalSize);
+    uploadedBytes += (end - i*chunkSize);
+  });
 
-      // walls
-      if(ball.x - ball.r < 0){ball.x = ball.r; ball.vx *= -1}
-      if(ball.x + ball.r > canvas.width){ball.x = canvas.width - ball.r; ball.vx *= -1}
-      if(ball.y - ball.r < 0){ball.y = ball.r; ball.vy *= -1}
+  const onProgress = opts.onProgress || function(){};
+  const signalObj = opts.signalObj || { abort:false };
 
-      // paddle collision
-      if(ball.y + ball.r > paddle.y && ball.y + ball.r < paddle.y + paddle.h && ball.x > paddle.x && ball.x < paddle.x + paddle.w){
-        // reflect depending on where it hits the paddle
-        const hitPos = (ball.x - (paddle.x + paddle.w/2)) / (paddle.w/2);
-        ball.vx = hitPos * 7;
-        ball.vy = -Math.abs(ball.vy);
-        // give small upward push
-        ball.y = paddle.y - ball.r - 1;
+  // prepare queue of chunk indexes to upload
+  const queue = [];
+  for(let i=0;i<totalChunks;i++){
+    if(!uploadedSet.has(i)) queue.push(i);
+  }
+
+  let active = 0;
+  let idxPointer = 0;
+  let retries = {};
+
+  return new Promise((resolve, reject) => {
+    function next(){
+      if(signalObj.abort){ reject('aborted'); return; }
+      if(uploadedBytes >= totalSize){
+        // finalize
+        finalizeUpload().then(()=>{ onProgress(100); resolve(); }).catch(err=>reject(err));
+        return;
       }
-
-      // bottom - lost life
-      if(ball.y - ball.r > canvas.height){
-        lives--;
-        if(lives<=0){
-          // game over
-          gameOver();
-        } else {
-          resetBall();
-        }
-        updateInfo();
+      while(active < CONCURRENCY && idxPointer < queue.length){
+        const chunkIndex = queue[idxPointer++];
+        active++;
+        sendChunkWithRetry(chunkIndex).then(bytesSent=>{
+          active--;
+          uploadedBytes += bytesSent;
+          onProgress((uploadedBytes/totalSize)*100);
+          if(uploadedBytes >= totalSize){
+            next();
+          } else {
+            next();
+          }
+        }).catch(err=>{
+          active--;
+          reject(err);
+        });
       }
-
-      // brick collisions
-      for(let b of bricks){
-        if(!b.alive) continue;
-        if(ball.x + ball.r > b.x && ball.x - ball.r < b.x + b.w && ball.y + ball.r > b.y && ball.y - ball.r < b.y + b.h){
-          // simple collision response: invert vy
-          ball.vy *= -1;
-          b.alive = false;
-          score += 10;
-          updateInfo();
-          // particle or small effect could be added
-          break;
-        }
-      }
-
-      // win condition: all bricks dead
-      if(bricks.every(b=>!b.alive)){
-        win();
+      // if no active and pointer done but uploadedBytes < totalSize -> means waiting for finalize or something
+      if(active === 0 && idxPointer >= queue.length && uploadedBytes < totalSize){
+        // maybe some pending chunks errored out and retries exhausted
+        // wait briefly
+        setTimeout(()=>{ if(active===0 && uploadedBytes < totalSize) reject('Failed to upload some chunks'); }, 2000);
       }
     }
-  }
 
-  function draw(){
-    // clear
-    ctx.clearRect(0,0,canvas.width,canvas.height);
-
-    // draw bricks (lungs pixels)
-    for(let b of bricks){
-      if(!b.alive) continue;
-      // white pixel block with slight rounded corners
-      roundRect(ctx,b.x,b.y,b.w,b.h,3,true,false,'#ffffff');
+    async function sendChunkWithRetry(i){
+      let attempts = retries[i] || 0;
+      while(attempts < RETRY_LIMIT){
+        try {
+          const sent = await sendChunk(i);
+          return sent;
+        } catch(e){
+          attempts++;
+          retries[i] = attempts;
+          console.warn('Chunk', i, 'failed attempt', attempts, e);
+          await new Promise(r => setTimeout(r, 500 * attempts));
+        }
+      }
+      throw('Chunk ' + i + ' failed after retries');
     }
 
-    // draw trachea center gap - we left empty in grid so it's okay
+    async function sendChunk(i){
+      if(signalObj.abort) throw('aborted');
+      const start = i * chunkSize;
+      const end = Math.min(start + chunkSize, totalSize);
+      const blob = file.slice(start, end);
+      // upload via fetch
+      const form = new FormData();
+      form.append('chunk', blob);
+      form.append('fileId', fileId);
+      form.append('fileName', file.name);
+      form.append('chunkIndex', i);
+      form.append('totalChunks', totalChunks);
 
-    // draw paddle (cigarette)
-    drawCigarette(paddle.x,paddle.y,paddle.w,paddle.h);
-
-    // draw ball (smoke)
-    drawSmoke(ball.x,ball.y,ball.r);
-
-    // bottom-right message
-    ctx.font = '14px Arial';
-    ctx.textAlign = 'right';
-    ctx.fillStyle = 'rgba(255,255,255,0.2)';
-    ctx.fillText('Quit Smoking.', canvas.width-10, canvas.height-10);
-  }
-
-  function drawCigarette(x,y,w,h){
-    // body
-    ctx.save();
-    // cigarette body (white)
-    roundRect(ctx,x,y,w,h,8,true,false,'#ffffff');
-    // filter (burning) left small orange
-    const filterW = Math.max(8, Math.floor(w*0.12));
-    roundRect(ctx, x, y, filterW, h,6,true,false,'#e58e73');
-    // ember glow at left (burned)
-    const emberX = x + filterW/2;
-    const emberY = y + h/2;
-    const grd = ctx.createRadialGradient(emberX,emberY,1,emberX,emberY,30);
-    grd.addColorStop(0,'rgba(255,140,60,0.9)');
-    grd.addColorStop(1,'rgba(255,140,60,0)');
-    ctx.fillStyle = grd;
-    ctx.beginPath(); ctx.arc(emberX,emberY,18,0,Math.PI*2); ctx.fill();
-    ctx.restore();
-  }
-
-  function drawSmoke(x,y,r){
-    if(!x || !y) return;
-    // smoke pixel: draw small white square with trailing shadow
-    ctx.save();
-    ctx.fillStyle = '#ffffff';
-    ctx.fillRect(x - r/2, y - r/2, r, r);
-    // trail
-    ctx.globalAlpha = 0.2;
-    ctx.fillRect(x - r/2, y - r/2 + 8, r, r*1.6);
-    ctx.globalAlpha = 1;
-    ctx.restore();
-  }
-
-  function roundRect(ctx,x,y,w,h,r,fill,stroke,fillStyle){
-    if(fillStyle) ctx.fillStyle = fillStyle;
-    ctx.beginPath();
-    ctx.moveTo(x+r,y);
-    ctx.arcTo(x+w,y,x+w,y+h,r);
-    ctx.arcTo(x+w,y+h,x,y+h,r);
-    ctx.arcTo(x,y+h,x,y,r);
-    ctx.arcTo(x,y,x+w,y,r);
-    ctx.closePath();
-    if(fill) ctx.fill();
-    if(stroke) ctx.stroke();
-  }
-
-  function gameOver(){
-    ball.active=false;
-    ctx.fillStyle = 'rgba(0,0,0,0.6)';
-    ctx.fillRect(0,0,canvas.width,canvas.height);
-    ctx.fillStyle = '#ffffff';
-    ctx.font = '36px Arial';
-    ctx.textAlign = 'center';
-    ctx.fillText('Game Over', canvas.width/2, canvas.height/2 - 20);
-    ctx.font = '18px Arial';
-    ctx.fillText('Quit Smoking — apna dhyaan rakho', canvas.width/2, canvas.height/2 + 14);
-  }
-
-  function win(){
-    ball.active=false;
-    ctx.fillStyle = 'rgba(0,0,0,0.5)';
-    ctx.fillRect(0,0,canvas.width,canvas.height);
-    ctx.fillStyle = '#ffffff';
-    ctx.font = '34px Arial';
-    ctx.textAlign = 'center';
-    ctx.fillText('You saved the lungs!', canvas.width/2, canvas.height/2 - 10);
-    ctx.font = '16px Arial';
-    ctx.fillText('Spread the message: Quit Smoking', canvas.width/2, canvas.height/2 + 20);
-  }
-
-  // simple AJAX demo: send score to server (fake endpoint). Uses fetch.
-  sendScoreBtn.addEventListener('click', async ()=>{
-    const payload = {score, timestamp: Date.now()};
-    try{
-      const res = await fetch('/save-score', { // dummy endpoint for demo
-        method: 'POST', headers: {'Content-Type':'application/json'}, body: JSON.stringify(payload)
+      const resp = await fetch(UPLOAD_URL, {
+        method:'POST',
+        body: form,
       });
-      if(res.ok){
-        alert('स्कोर भेज दिया गया (डेमो)।');
-      } else alert('सर्वर रिस्पॉन्स: ' + res.status);
-    }catch(e){
-      alert('स्कोर भेजते समय समस्या: (demo) — कोई वास्तविक सर्वर नहीं।');
+      if(!resp.ok) {
+        const text = await resp.text().catch(()=>resp.statusText);
+        throw(text || 'Upload chunk failed');
+      }
+      // assume server returns JSON { ok:true }
+      return (end - start);
     }
+
+    async function finalizeUpload(){
+      // tell server to assemble
+      const resp = await fetch(COMPLETE_URL, {
+        method:'POST',
+        headers:{ 'Content-Type':'application/json' },
+        body: JSON.stringify({ fileId, fileName: file.name, fileSize: totalSize })
+      });
+      if(!resp.ok) throw('Finalize error');
+      return await resp.json();
+    }
+
+    // start initial workers
+    next();
   });
-
-  restartBtn.addEventListener('click', ()=>{setup();});
-
-  // initial setup
-  setup();
-})();
-</script></body>
+}
+</script>
+</body>
 </html>
