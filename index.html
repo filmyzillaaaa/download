@@ -1,60 +1,19 @@
-<!doctype html>
+<!DOCTYPE html>
 <html lang="hi">
 <head>
-  <meta charset="utf-8" />
-  <meta name="viewport" content="width=device-width,initial-scale=1" />
-  <title>My Media App — Playlist</title>
-
-  <link rel="stylesheet" href="style.css" />
-  <!-- Fuse.js CDN (v6+) -->
-  <script src="https://unpkg.com/fuse.js@6.6.2/dist/fuse.min.js"></script>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>My Media App</title>
+  <link rel="stylesheet" href="style.css">
+  <script src="https://cdn.jsdelivr.net/npm/fuse.js@6.6.2"></script>
 </head>
 <body>
-  <header class="topbar">
-    <div class="brand">MyMediaApp</div>
-    <div class="search-wrap">
-      <input id="searchInput" type="search" placeholder="खोजें — गाने, वीडियो, शायरी, शिक्षा..." autocomplete="off" />
-      <button id="clearSearch" title="Clear">✕</button>
-      <div id="suggestions" class="suggestions hide"></div>
-    </div>
+  <header>
+    <h1>📺 My Media App</h1>
+    <input type="text" id="searchInput" placeholder="कुछ भी खोजें...">
   </header>
-
-  <nav class="filters">
-    <button class="cat-btn active" data-cat="all">सब</button>
-    <button class="cat-btn" data-cat="music">Music</button>
-    <button class="cat-btn" data-cat="video">Video</button>
-    <button class="cat-btn" data-cat="education">Education</button>
-    <button class="cat-btn" data-cat="shayari">Shayari</button>
-    <button class="cat-btn" data-cat="movie">Movie</button>
-  </nav>
-
-  <main>
-    <section class="player-area hide" id="playerArea">
-      <div class="player-left">
-        <img id="playerThumb" src="" alt="thumb" />
-        <div class="player-meta">
-          <h3 id="playerTitle">Title</h3>
-          <p id="playerCategory">Category</p>
-        </div>
-      </div>
-      <div class="player-right">
-        <video id="mediaPlayer" controls crossorigin playsinline></video>
-      </div>
-      <button id="closePlayer" class="close-player" title="Close">✕</button>
-    </section>
-
-    <section id="listArea" class="list-area">
-      <!-- cards injected here -->
-    </section>
-
-    <section id="noResults" class="no-results hide">
-      <p>कोई परिणाम नहीं मिला। कुछ अलग शब्द ट्राय करें।</p>
-    </section>
-  </main>
-
-  <footer class="footer">
-    <small>Made with ❤️ • JSON + Fuse.js • Host on GitHub Pages</small>
-  </footer>
+  
+  <main id="results"></main>
 
   <script src="script.js"></script>
 </body>
