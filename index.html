@@ -1,19 +1,72 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="hi">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>My Media App</title>
-  <link rel="stylesheet" href="style.css">
-  <script src="https://cdn.jsdelivr.net/npm/fuse.js@6.6.2"></script>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1" />
+  <title>MyMedia — Smart Player</title>
+
+  <!-- Google Font (free) -->
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
+
+  <link rel="stylesheet" href="style.css" />
+  <!-- Fuse.js (fuzzy search) -->
+  <script src="https://cdn.jsdelivr.net/npm/fuse.js@6.6.2/dist/fuse.min.js"></script>
 </head>
 <body>
-  <header>
-    <h1>📺 My Media App</h1>
-    <input type="text" id="searchInput" placeholder="कुछ भी खोजें...">
-  </header>
-  
-  <main id="results"></main>
+  <div class="app">
+
+    <header class="top">
+      <div class="brand">
+        <div class="logo">🎬</div>
+        <div>
+          <div class="title">MyMedia</div>
+          <div class="subtitle">Music · Video · News · Shayari</div>
+        </div>
+      </div>
+
+      <div class="searchbox">
+        <input id="searchInput" type="search" placeholder="खोजें — गाना, वीडियो, शायरी, खबर..." autocomplete="off" />
+        <button id="clearBtn" title="Clear">✕</button>
+        <div id="suggestBox" class="suggestions hide"></div>
+      </div>
+
+      <div class="filters" id="filters">
+        <!-- category buttons injected -->
+      </div>
+    </header>
+
+    <main id="content">
+      <section id="stats" class="stats">
+        <div id="count">0 परिणाम</div>
+        <div class="hint">JSON driven • Fuse.js fuzzy search</div>
+      </section>
+
+      <section id="grid" class="grid">
+        <!-- cards injected here -->
+      </section>
+
+      <section id="empty" class="empty hide">
+        <p>कोई आइटम नहीं मिला — अलग शब्द आजमाएँ या सभी दिखाएँ।</p>
+      </section>
+    </main>
+
+    <footer class="footer">
+      <small>Made with ❤️ — JSON + Fuse.js — Host on GitHub Pages</small>
+    </footer>
+
+    <!-- Modal / Player -->
+    <div id="modal" class="modal hide" aria-hidden="true">
+      <div class="modal-back" id="modalBack"></div>
+      <div class="modal-card" role="dialog" aria-modal="true">
+        <button id="modalClose" class="modal-close" title="Close">✕</button>
+        <div id="modalBody" class="modal-body">
+          <!-- dynamic content -->
+        </div>
+        <div id="modalTitle" class="modal-title"></div>
+      </div>
+    </div>
+
+  </div>
 
   <script src="script.js"></script>
 </body>
