@@ -1,122 +1,61 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="hi">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>Make Money Online</title>
-  <meta property="og:image" content="https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcSAfM91NjiIHoS5bMnZ0uJjdDBa1a-A_mc95jl8NHfVGXPofIZsZpL4ElbF&s=10"/>
-  <meta property="og:title" content="Facebook से पैसे कमाएँ - आज़माएँ ये 187 आसान ट्रिक्स!"/>
-  <style>
-    body {
-      margin: 0;
-      font-family: 'Segoe UI', sans-serif;
-      background: linear-gradient(to top right, #f1f1f1, #ffffff);
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      height: 100vh;
-      position: relative;
-    }
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>My Media App — Playlist</title>
 
-    .main {
-      text-align: center;
-      width: 100%;
-      height: 100%;
-      position: absolute;
-      top: 0;
-      left: 0;
-    }
-
-    img {
-      max-width: 90%;
-      height: auto;
-      border-radius: 12px;
-      box-shadow: 0 4px 10px rgba(0,0,0,0.1);
-      margin-top: 60px;
-    }
-
-    h1 {
-      font-size: 22px;
-      margin-top: 20px;
-      color: #111;
-    }
-
-    .popup {
-      display: none;
-      position: fixed;
-      top: 50%;
-      left: 50%;
-      transform: translate(-50%, -50%);
-      background: #ffffff;
-      border-radius: 12px;
-      box-shadow: 0 4px 10px rgba(0,0,0,0.2);
-      padding: 30px;
-      text-align: center;
-      z-index: 999;
-    }
-
-    .popup h2 {
-      margin-bottom: 20px;
-      font-size: 18px;
-    }
-
-    .popup button {
-      background: #4CAF50;
-      color: white;
-      padding: 10px 20px;
-      border: none;
-      border-radius: 8px;
-      cursor: pointer;
-      font-size: 16px;
-    }
-
-    .overlay {
-      display: none;
-      position: fixed;
-      top: 0; left: 0;
-      width: 100%; height: 100%;
-      background: rgba(0,0,0,0.3);
-      z-index: 998;
-    }
-  </style>
+  <link rel="stylesheet" href="style.css" />
+  <!-- Fuse.js CDN (v6+) -->
+  <script src="https://unpkg.com/fuse.js@6.6.2/dist/fuse.min.js"></script>
 </head>
 <body>
+  <header class="topbar">
+    <div class="brand">MyMediaApp</div>
+    <div class="search-wrap">
+      <input id="searchInput" type="search" placeholder="खोजें — गाने, वीडियो, शायरी, शिक्षा..." autocomplete="off" />
+      <button id="clearSearch" title="Clear">✕</button>
+      <div id="suggestions" class="suggestions hide"></div>
+    </div>
+  </header>
 
-  <div class="main" id="click-area">
-    <img src="https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcSAfM91NjiIHoS5bMnZ0uJjdDBa1a-A_mc95jl8NHfVGXPofIZsZpL4ElbF&s=10" alt="Make Money" />
-    <h1>Facebook से पैसे कमाएँ - आज़माएँ ये 187 आसान ट्रिक्स!</h1>
-  </div>
+  <nav class="filters">
+    <button class="cat-btn active" data-cat="all">सब</button>
+    <button class="cat-btn" data-cat="music">Music</button>
+    <button class="cat-btn" data-cat="video">Video</button>
+    <button class="cat-btn" data-cat="education">Education</button>
+    <button class="cat-btn" data-cat="shayari">Shayari</button>
+    <button class="cat-btn" data-cat="movie">Movie</button>
+  </nav>
 
-  <div class="overlay" id="overlay"></div>
-  <div class="popup" id="popup">
-    <h2>💰 Make Money Online – 187 Tricks and Tips</h2>
-    <button onclick="redirectNow()">🚀 Start</button>
-  </div>
+  <main>
+    <section class="player-area hide" id="playerArea">
+      <div class="player-left">
+        <img id="playerThumb" src="" alt="thumb" />
+        <div class="player-meta">
+          <h3 id="playerTitle">Title</h3>
+          <p id="playerCategory">Category</p>
+        </div>
+      </div>
+      <div class="player-right">
+        <video id="mediaPlayer" controls crossorigin playsinline></video>
+      </div>
+      <button id="closePlayer" class="close-player" title="Close">✕</button>
+    </section>
 
-  <script>
-    let hasClicked = false;
+    <section id="listArea" class="list-area">
+      <!-- cards injected here -->
+    </section>
 
-    // Function to redirect
-    function redirectNow() {
-      window.location.href = "https://gyanipanda.com";
-    }
+    <section id="noResults" class="no-results hide">
+      <p>कोई परिणाम नहीं मिला। कुछ अलग शब्द ट्राय करें।</p>
+    </section>
+  </main>
 
-    // On full screen click
-    document.getElementById("click-area").addEventListener("click", () => {
-      if (!hasClicked) {
-        hasClicked = true;
-        setTimeout(redirectNow, 1000);
-      }
-    });
+  <footer class="footer">
+    <small>Made with ❤️ • JSON + Fuse.js • Host on GitHub Pages</small>
+  </footer>
 
-    // Show popup if user is idle for 2 sec
-    setTimeout(() => {
-      if (!hasClicked) {
-        document.getElementById("popup").style.display = "block";
-        document.getElementById("overlay").style.display = "block";
-      }
-    }, 2000);
-  </script>
-
+  <script src="script.js"></script>
 </body>
 </html>
