@@ -1,162 +1,356 @@
-<!DOCTYPE html>
+<!doctype html>
+
 <html lang="hi">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>बुकमार्क वेब ऐप</title>
-<style>
-    body {
-        font-family: 'Segoe UI', sans-serif;
-        background: linear-gradient(120deg, #ffecd2, #fcb69f);
-        margin: 0;
-        padding: 0;
-    }
-    header {
-        background: #ff7e5f;
-        color: white;
-        padding: 15px;
-        text-align: center;
-        font-size: 1.4em;
-        font-weight: bold;
-    }
-    .container {
-        max-width: 600px;
-        margin: auto;
-        padding: 15px;
-    }
-    .input-box {
-        display: flex;
-        gap: 10px;
-        margin-bottom: 15px;
-    }
-    input, button {
-        padding: 10px;
-        border-radius: 5px;
-        border: none;
-        font-size: 1em;
-    }
-    input {
-        flex: 1;
-        border: 1px solid #ccc;
-    }
-    button {
-        background: #ff7e5f;
-        color: white;
-        cursor: pointer;
-    }
-    button:hover {
-        background: #e76f51;
-    }
-    .search-box {
-        margin-bottom: 15px;
-    }
-    .bookmark-list {
-        list-style: none;
-        padding: 0;
-    }
-    .bookmark-item {
-        background: white;
-        margin-bottom: 10px;
-        padding: 10px;
-        border-radius: 8px;
-        display: flex;
-        justify-content: space-between;
-        align-items: center;
-        box-shadow: 0 2px 5px rgba(0,0,0,0.1);
-    }
-    .bookmark-item a {
-        text-decoration: none;
-        color: #333;
-        font-weight: bold;
-    }
-    .delete-btn {
-        background: red;
-        color: white;
-        border: none;
-        padding: 5px 10px;
-        border-radius: 5px;
-        cursor: pointer;
-    }
-    @media (max-width: 500px) {
-        .input-box {
-            flex-direction: column;
-        }
-        button {
-            width: 100%;
-        }
-    }
-</style>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Quit Smoking - Lung Pixel Game</title>
+  <style>
+    :root{--bg:#000;--accent:#ffffff;--danger:#ff6b6b;--cig:#f2c08a}
+    html,body{height:100%;margin:0;font-family:Inter,system-ui,Segoe UI,Arial;background:var(--bg);color:var(--accent);-webkit-font-smoothing:antialiased}
+    .wrap{display:flex;flex-direction:column;min-height:100vh;padding:16px;box-sizing:border-box;gap:12px}
+    header{display:flex;align-items:center;justify-content:space-between}
+    h1{font-size:18px;margin:0;letter-spacing:0.6px}
+    .subtitle{font-size:12px;opacity:0.7}
+    .game-card{flex:1;display:grid;grid-template-columns:1fr;align-items:start;justify-items:center}
+    #gameCanvas{background:transparent;max-width:900px;width:100%;height:auto;border-radius:6px;box-shadow:0 6px 18px rgba(0,0,0,0.6)}
+    .hud{width:100%;max-width:900px;display:flex;justify-content:space-between;align-items:center}
+    .btn{background:transparent;border:1px solid rgba(255,255,255,0.12);padding:8px 12px;border-radius:6px;color:var(--accent);cursor:pointer}
+    .small{font-size:13px}
+    footer{font-size:12px;opacity:0.6}
+    /* responsive text */
+    @media(max-width:420px){h1{font-size:16px}.subtitle{font-size:11px}}
+  </style>
 </head>
 <body>
-
-<header>📚 मेरा बुकमार्क वेब ऐप</header>
-
-<div class="container">
-    <div class="input-box">
-        <input type="text" id="title" placeholder="वेबसाइट का नाम लिखें">
-        <input type="url" id="url" placeholder="URL डालें">
-        <button onclick="addBookmark()">➕ जोड़ें</button>
-    </div>
-
-    <div class="search-box">
-        <input type="text" id="search" placeholder="सर्च करें...">
-    </div>
-
-    <ul id="bookmarkList" class="bookmark-list"></ul>
+  <div class="wrap">
+    <header>
+      <div>
+        <h1>Quit Smoking - Lung Pixel Game</h1>
+        <div class="subtitle">निष्पादन: तीर से निशाना लगाकर फेफड़ों के पिक्सल बचाओ — हिन्दी में</div>
+      </div>
+      <div>
+        <button id="restartBtn" class="btn small">रीस्टार्ट</button>
+      </div>
+    </header><div class="game-card">
+  <canvas id="gameCanvas" width="900" height="700"></canvas>
+  <div style="margin-top:10px;width:100%;max-width:900px;display:flex;justify-content:space-between;align-items:center">
+    <div id="info" class="small">Score: 0 &nbsp;|&nbsp;Lives: 3</div>
+    <div class="small">Touch/Drag या माउस से पैंडल चलाएँ, क्लिक/टैप से फायर</div>
+  </div>
 </div>
 
-<!-- Fuse.js CDN -->
-<script src="https://cdn.jsdelivr.net/npm/fuse.js/dist/fuse.min.js"></script>
+<div class="hud">
+  <div class="small">Demo AJAX: स्कोर सर्वर पर भेजें</div>
+  <div>
+    <button id="sendScoreBtn" class="btn small">स्कोर भेजें</button>
+  </div>
+</div>
 
-<script>
-    let bookmarks = JSON.parse(localStorage.getItem("bookmarks")) || [];
+<footer>क्विट स्मोकिंग — खेल कर संदेश फैलाएँ</footer>
 
-    function renderBookmarks(list = bookmarks) {
-        const bookmarkList = document.getElementById("bookmarkList");
-        bookmarkList.innerHTML = "";
-        list.forEach((bm, index) => {
-            const li = document.createElement("li");
-            li.className = "bookmark-item";
-            li.innerHTML = `
-                <a href="${bm.url}" target="_blank">${bm.title}</a>
-                <button class="delete-btn" onclick="deleteBookmark(${index})">❌ हटाएँ</button>
-            `;
-            bookmarkList.appendChild(li);
-        });
-    }
+  </div><script>
+// Single-file game: pixel-lung bricks, paddle as cigarette, smoke as ball.
+(()=>{
+  const canvas = document.getElementById('gameCanvas');
+  const ctx = canvas.getContext('2d');
+  const info = document.getElementById('info');
+  const restartBtn = document.getElementById('restartBtn');
+  const sendScoreBtn = document.getElementById('sendScoreBtn');
 
-    function addBookmark() {
-        const title = document.getElementById("title").value.trim();
-        const url = document.getElementById("url").value.trim();
-        if (!title || !url) {
-            alert("कृपया नाम और URL भरें");
-            return;
+  let W = canvas.width, H = canvas.height;
+  // Responsive resize keeping ratio
+  function fitCanvas(){
+    const maxW = Math.min(window.innerWidth-32, 900);
+    const ratio = 900/700;
+    canvas.style.width = maxW + 'px';
+    canvas.style.height = (maxW/ratio) + 'px';
+  }
+  window.addEventListener('resize', fitCanvas);
+  fitCanvas();
+
+  // Lung pixel map: 1 means brick present. A simple symmetric mask approximating lungs.
+  // Use a small grid that will scale.
+  const lungMap = [
+    "000001111111000000111111100000",
+    "000111111111110011111111110000",
+    "001111111111111111111111111000",
+    "011111111111111111111111111100",
+    "011111111111111111111111111100",
+    "111111111111111111111111111110",
+    "111111111111100001111111111110",
+    "111111111110000000011111111110",
+    "111111111100000000001111111110",
+    "111111111000000000000111111110",
+    "111111100000000000000011111110",
+    "011111000000000000000001111100",
+    "001110000000000000000000111000",
+    "000000000000000000000000000000",
+  ];
+  // convert strings to numbers
+  const grid = lungMap.map(r => r.split('').map(c => +c));
+
+  // Game variables
+  let bricks = []; // {x,y,w,h,alive}
+  let brickCols = grid[0].length;
+  let brickRows = grid.length;
+  let brickW, brickH, brickGap;
+
+  let paddle = {x:50,y:0,w:120,h:16}; // cigarette
+  let ball = {x:0,y:0,r:8,vx:0,vy:0,active:false}; // smoke
+  let score=0, lives=3;
+
+  function setup(){
+    // calculate bricks size based on canvas resolution
+    const effectiveW = canvas.width; // logical pixels
+    const margin = 40;
+    brickGap = 3;
+    brickW = Math.floor((effectiveW - margin*2 - (brickCols-1)*brickGap) / brickCols);
+    brickH = Math.floor(brickW * 0.9);
+
+    bricks = [];
+    for(let row=0; row<brickRows; row++){
+      for(let col=0; col<brickCols; col++){
+        if(grid[row][col]===1){
+          const x = margin + col*(brickW+brickGap);
+          const y = 40 + row*(brickH+brickGap);
+          bricks.push({x,y,w:brickW,h:brickH,alive:true});
         }
-        bookmarks.push({ title, url });
-        localStorage.setItem("bookmarks", JSON.stringify(bookmarks));
-        document.getElementById("title").value = "";
-        document.getElementById("url").value = "";
-        renderBookmarks();
+      }
     }
 
-    function deleteBookmark(index) {
-        bookmarks.splice(index, 1);
-        localStorage.setItem("bookmarks", JSON.stringify(bookmarks));
-        renderBookmarks();
-    }
+    paddle.w = Math.max(70, Math.min(180, Math.floor(effectiveW*0.13)));
+    paddle.y = canvas.height - 70;
+    paddle.x = (canvas.width - paddle.w)/2;
 
-    document.getElementById("search").addEventListener("input", function () {
-        const fuse = new Fuse(bookmarks, { keys: ["title", "url"], threshold: 0.4 });
-        const result = fuse.search(this.value);
-        if (this.value.trim() === "") {
-            renderBookmarks();
+    resetBall();
+    score=0; lives=3;
+    updateInfo();
+    loop();
+  }
+
+  function resetBall(){
+    ball.x = paddle.x + paddle.w/2;
+    ball.y = paddle.y - 20;
+    ball.vx = 0;
+    ball.vy = -6;
+    ball.active = false; // wait for click to launch
+  }
+
+  function updateInfo(){
+    info.innerHTML = `Score: ${score} &nbsp;|&nbsp;Lives: ${lives}`;
+  }
+
+  // input
+  let dragging = false;
+  function onPointerDown(e){
+    dragging = true;
+    const rect = canvas.getBoundingClientRect();
+    const x = ((e.touches)? e.touches[0].clientX : e.clientX) - rect.left;
+    paddle.x = Math.max(10, Math.min(canvas.width - paddle.w - 10, x - paddle.w/2));
+    // if ball not active, move ball with paddle
+    if(!ball.active){ball.x = paddle.x + paddle.w/2;}
+  }
+  function onPointerMove(e){
+    if(!dragging) return;
+    const rect = canvas.getBoundingClientRect();
+    const x = ((e.touches)? e.touches[0].clientX : e.clientX) - rect.left;
+    paddle.x = Math.max(10, Math.min(canvas.width - paddle.w - 10, x - paddle.w/2));
+    if(!ball.active) ball.x = paddle.x + paddle.w/2;
+  }
+  function onPointerUp(e){
+    dragging = false;
+  }
+  canvas.addEventListener('mousedown', onPointerDown);
+  canvas.addEventListener('mousemove', onPointerMove);
+  window.addEventListener('mouseup', onPointerUp);
+  canvas.addEventListener('touchstart', onPointerDown,{passive:true});
+  canvas.addEventListener('touchmove', onPointerMove,{passive:true});
+  window.addEventListener('touchend', onPointerUp);
+
+  // click to fire
+  canvas.addEventListener('click', ()=>{
+    if(!ball.active){
+      // launch with slight random angle
+      ball.active = true;
+      ball.vx = (Math.random()*4 - 2);
+      ball.vy = -6;
+    }
+  });
+
+  function loop(){
+    update();
+    draw();
+    requestAnimationFrame(loop);
+  }
+
+  function update(){
+    if(ball.active){
+      ball.x += ball.vx;
+      ball.y += ball.vy;
+
+      // walls
+      if(ball.x - ball.r < 0){ball.x = ball.r; ball.vx *= -1}
+      if(ball.x + ball.r > canvas.width){ball.x = canvas.width - ball.r; ball.vx *= -1}
+      if(ball.y - ball.r < 0){ball.y = ball.r; ball.vy *= -1}
+
+      // paddle collision
+      if(ball.y + ball.r > paddle.y && ball.y + ball.r < paddle.y + paddle.h && ball.x > paddle.x && ball.x < paddle.x + paddle.w){
+        // reflect depending on where it hits the paddle
+        const hitPos = (ball.x - (paddle.x + paddle.w/2)) / (paddle.w/2);
+        ball.vx = hitPos * 7;
+        ball.vy = -Math.abs(ball.vy);
+        // give small upward push
+        ball.y = paddle.y - ball.r - 1;
+      }
+
+      // bottom - lost life
+      if(ball.y - ball.r > canvas.height){
+        lives--;
+        if(lives<=0){
+          // game over
+          gameOver();
         } else {
-            renderBookmarks(result.map(r => r.item));
+          resetBall();
         }
-    });
+        updateInfo();
+      }
 
-    renderBookmarks();
-</script>
+      // brick collisions
+      for(let b of bricks){
+        if(!b.alive) continue;
+        if(ball.x + ball.r > b.x && ball.x - ball.r < b.x + b.w && ball.y + ball.r > b.y && ball.y - ball.r < b.y + b.h){
+          // simple collision response: invert vy
+          ball.vy *= -1;
+          b.alive = false;
+          score += 10;
+          updateInfo();
+          // particle or small effect could be added
+          break;
+        }
+      }
 
-</body>
+      // win condition: all bricks dead
+      if(bricks.every(b=>!b.alive)){
+        win();
+      }
+    }
+  }
+
+  function draw(){
+    // clear
+    ctx.clearRect(0,0,canvas.width,canvas.height);
+
+    // draw bricks (lungs pixels)
+    for(let b of bricks){
+      if(!b.alive) continue;
+      // white pixel block with slight rounded corners
+      roundRect(ctx,b.x,b.y,b.w,b.h,3,true,false,'#ffffff');
+    }
+
+    // draw trachea center gap - we left empty in grid so it's okay
+
+    // draw paddle (cigarette)
+    drawCigarette(paddle.x,paddle.y,paddle.w,paddle.h);
+
+    // draw ball (smoke)
+    drawSmoke(ball.x,ball.y,ball.r);
+
+    // bottom-right message
+    ctx.font = '14px Arial';
+    ctx.textAlign = 'right';
+    ctx.fillStyle = 'rgba(255,255,255,0.2)';
+    ctx.fillText('Quit Smoking.', canvas.width-10, canvas.height-10);
+  }
+
+  function drawCigarette(x,y,w,h){
+    // body
+    ctx.save();
+    // cigarette body (white)
+    roundRect(ctx,x,y,w,h,8,true,false,'#ffffff');
+    // filter (burning) left small orange
+    const filterW = Math.max(8, Math.floor(w*0.12));
+    roundRect(ctx, x, y, filterW, h,6,true,false,'#e58e73');
+    // ember glow at left (burned)
+    const emberX = x + filterW/2;
+    const emberY = y + h/2;
+    const grd = ctx.createRadialGradient(emberX,emberY,1,emberX,emberY,30);
+    grd.addColorStop(0,'rgba(255,140,60,0.9)');
+    grd.addColorStop(1,'rgba(255,140,60,0)');
+    ctx.fillStyle = grd;
+    ctx.beginPath(); ctx.arc(emberX,emberY,18,0,Math.PI*2); ctx.fill();
+    ctx.restore();
+  }
+
+  function drawSmoke(x,y,r){
+    if(!x || !y) return;
+    // smoke pixel: draw small white square with trailing shadow
+    ctx.save();
+    ctx.fillStyle = '#ffffff';
+    ctx.fillRect(x - r/2, y - r/2, r, r);
+    // trail
+    ctx.globalAlpha = 0.2;
+    ctx.fillRect(x - r/2, y - r/2 + 8, r, r*1.6);
+    ctx.globalAlpha = 1;
+    ctx.restore();
+  }
+
+  function roundRect(ctx,x,y,w,h,r,fill,stroke,fillStyle){
+    if(fillStyle) ctx.fillStyle = fillStyle;
+    ctx.beginPath();
+    ctx.moveTo(x+r,y);
+    ctx.arcTo(x+w,y,x+w,y+h,r);
+    ctx.arcTo(x+w,y+h,x,y+h,r);
+    ctx.arcTo(x,y+h,x,y,r);
+    ctx.arcTo(x,y,x+w,y,r);
+    ctx.closePath();
+    if(fill) ctx.fill();
+    if(stroke) ctx.stroke();
+  }
+
+  function gameOver(){
+    ball.active=false;
+    ctx.fillStyle = 'rgba(0,0,0,0.6)';
+    ctx.fillRect(0,0,canvas.width,canvas.height);
+    ctx.fillStyle = '#ffffff';
+    ctx.font = '36px Arial';
+    ctx.textAlign = 'center';
+    ctx.fillText('Game Over', canvas.width/2, canvas.height/2 - 20);
+    ctx.font = '18px Arial';
+    ctx.fillText('Quit Smoking — apna dhyaan rakho', canvas.width/2, canvas.height/2 + 14);
+  }
+
+  function win(){
+    ball.active=false;
+    ctx.fillStyle = 'rgba(0,0,0,0.5)';
+    ctx.fillRect(0,0,canvas.width,canvas.height);
+    ctx.fillStyle = '#ffffff';
+    ctx.font = '34px Arial';
+    ctx.textAlign = 'center';
+    ctx.fillText('You saved the lungs!', canvas.width/2, canvas.height/2 - 10);
+    ctx.font = '16px Arial';
+    ctx.fillText('Spread the message: Quit Smoking', canvas.width/2, canvas.height/2 + 20);
+  }
+
+  // simple AJAX demo: send score to server (fake endpoint). Uses fetch.
+  sendScoreBtn.addEventListener('click', async ()=>{
+    const payload = {score, timestamp: Date.now()};
+    try{
+      const res = await fetch('/save-score', { // dummy endpoint for demo
+        method: 'POST', headers: {'Content-Type':'application/json'}, body: JSON.stringify(payload)
+      });
+      if(res.ok){
+        alert('स्कोर भेज दिया गया (डेमो)।');
+      } else alert('सर्वर रिस्पॉन्स: ' + res.status);
+    }catch(e){
+      alert('स्कोर भेजते समय समस्या: (demo) — कोई वास्तविक सर्वर नहीं।');
+    }
+  });
+
+  restartBtn.addEventListener('click', ()=>{setup();});
+
+  // initial setup
+  setup();
+})();
+</script></body>
 </html>
