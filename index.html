@@ -1,73 +1,148 @@
-<!doctype html>
+<!DOCTYPE html>
 <html lang="hi">
 <head>
-  <meta charset="utf-8" />
-  <meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1" />
-  <title>MyMedia — Smart Player</title>
-
-  <!-- Google Font (free) -->
-  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
-
-  <link rel="stylesheet" href="style.css" />
-  <!-- Fuse.js (fuzzy search) -->
-  <script src="https://cdn.jsdelivr.net/npm/fuse.js@6.6.2/dist/fuse.min.js"></script>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>बुकमार्क ऐप</title>
+<style>
+    body {
+        font-family: Arial, sans-serif;
+        background: #f4f7f8;
+        margin: 0;
+        padding: 0;
+    }
+    header {
+        background: #4CAF50;
+        color: white;
+        padding: 10px;
+        text-align: center;
+        font-size: 22px;
+    }
+    .container {
+        max-width: 500px;
+        margin: auto;
+        padding: 15px;
+    }
+    input, button {
+        padding: 10px;
+        margin: 5px 0;
+        width: 100%;
+        box-sizing: border-box;
+        border-radius: 5px;
+        border: 1px solid #ccc;
+    }
+    button {
+        background: #4CAF50;
+        color: white;
+        font-size: 16px;
+        cursor: pointer;
+        border: none;
+    }
+    button:hover {
+        background: #45a049;
+    }
+    .bookmark {
+        background: white;
+        margin: 5px 0;
+        padding: 10px;
+        border-radius: 5px;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+    }
+    a {
+        text-decoration: none;
+        color: #333;
+        font-weight: bold;
+    }
+    .delete-btn {
+        background: red;
+        color: white;
+        border: none;
+        padding: 5px 10px;
+        border-radius: 5px;
+        cursor: pointer;
+    }
+    .delete-btn:hover {
+        background: darkred;
+    }
+</style>
 </head>
 <body>
-  <div class="app">
 
-    <header class="top">
-      <div class="brand">
-        <div class="logo">🎬</div>
-        <div>
-          <div class="title">MyMedia</div>
-          <div class="subtitle">Music · Video · News · Shayari</div>
-        </div>
-      </div>
+<header>📑 मेरा बुकमार्क ऐप</header>
 
-      <div class="searchbox">
-        <input id="searchInput" type="search" placeholder="खोजें — गाना, वीडियो, शायरी, खबर..." autocomplete="off" />
-        <button id="clearBtn" title="Clear">✕</button>
-        <div id="suggestBox" class="suggestions hide"></div>
-      </div>
+<div class="container">
+    <input type="text" id="siteName" placeholder="वेबसाइट का नाम लिखें">
+    <input type="url" id="siteURL" placeholder="वेबसाइट का URL लिखें (https://...)">
+    <button onclick="addBookmark()">बुकमार्क जोड़ें</button>
 
-      <div class="filters" id="filters">
-        <!-- category buttons injected -->
-      </div>
-    </header>
+    <input type="text" id="searchBox" placeholder="बुकमार्क खोजें...">
 
-    <main id="content">
-      <section id="stats" class="stats">
-        <div id="count">0 परिणाम</div>
-        <div class="hint">JSON driven • Fuse.js fuzzy search</div>
-      </section>
+    <div id="bookmarkList"></div>
+</div>
 
-      <section id="grid" class="grid">
-        <!-- cards injected here -->
-      </section>
+<!-- Fuse.js CDN -->
+<script src="https://cdn.jsdelivr.net/npm/fuse.js/dist/fuse.min.js"></script>
+<script>
+    let bookmarks = JSON.parse(localStorage.getItem('bookmarks')) || [];
 
-      <section id="empty" class="empty hide">
-        <p>कोई आइटम नहीं मिला — अलग शब्द आजमाएँ या सभी दिखाएँ।</p>
-      </section>
-    </main>
+    function saveBookmarks() {
+        localStorage.setItem('bookmarks', JSON.stringify(bookmarks));
+        displayBookmarks(bookmarks);
+    }
 
-    <footer class="footer">
-      <small>Made with ❤️ — JSON + Fuse.js — Host on GitHub Pages</small>
-    </footer>
+    function addBookmark() {
+        let name = document.getElementById('siteName').value.trim();
+        let url = document.getElementById('siteURL').value.trim();
 
-    <!-- Modal / Player -->
-    <div id="modal" class="modal hide" aria-hidden="true">
-      <div class="modal-back" id="modalBack"></div>
-      <div class="modal-card" role="dialog" aria-modal="true">
-        <button id="modalClose" class="modal-close" title="Close">✕</button>
-        <div id="modalBody" class="modal-body">
-          <!-- dynamic content -->
-        </div>
-        <div id="modalTitle" class="modal-title"></div>
-      </div>
-    </div>
+        if (!name || !url) {
+            alert("कृपया नाम और URL भरें!");
+            return;
+        }
 
-  </div>
+        bookmarks.push({ name, url });
+        saveBookmarks();
 
-  <script src="script.js"></script>
+        document.getElementById('siteName').value = '';
+        document.getElementById('siteURL').value = '';
+    }
+
+    function deleteBookmark(index) {
+        if (confirm("क्या आप इसे डिलीट करना चाहते हैं?")) {
+            bookmarks.splice(index, 1);
+            saveBookmarks();
+        }
+    }
+
+    function displayBookmarks(list) {
+        let container = document.getElementById('bookmarkList');
+        container.innerHTML = '';
+        list.forEach((bookmark, index) => {
+            container.innerHTML += `
+                <div class="bookmark">
+                    <a href="${bookmark.url}" target="_blank">${bookmark.name}</a>
+                    <button class="delete-btn" onclick="deleteBookmark(${index})">हटाएं</button>
+                </div>
+            `;
+        });
+    }
+
+    // Search with Fuse.js
+    document.getElementById('searchBox').addEventListener('input', function() {
+        let fuse = new Fuse(bookmarks, { keys: ['name', 'url'], threshold: 0.4 });
+        let result = fuse.search(this.value);
+        if (this.value.trim() === '') {
+            displayBookmarks(bookmarks);
+        } else {
+            displayBookmarks(result.map(r => r.item));
+        }
+    });
+
+    // Initial Load
+    displayBookmarks(bookmarks);
+</script>
+
 </body>
 </html>
