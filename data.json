@@ -1,0 +1,74 @@
+[
+  {
+    "id": "m1",
+    "title": "Romantic Melody - Love Song",
+    "category": "music",
+    "tags": ["romantic","love","song","melody"],
+    "thumbnail": "assets/romantic1.jpg",
+    "url": "videos/romantic1.mp4",
+    "duration": "3:45"
+  },
+  {
+    "id": "v1",
+    "title": "Physics: Motion Introduction",
+    "category": "education",
+    "tags": ["physics","motion","class9","lesson"],
+    "thumbnail": "assets/physics1.jpg",
+    "url": "videos/physics_motion.mp4",
+    "duration": "8:12"
+  },
+  {
+    "id": "s1",
+    "title": "Funny Shayari on Life",
+    "category": "shayari",
+    "tags": ["shayari","funny","poem"],
+    "thumbnail": "assets/shayari1.jpg",
+    "url": "videos/shayari_funny.mp4",
+    "duration": "1:20"
+  },
+  {
+    "id": "mv1",
+    "title": "Movie Track - Heartbeats",
+    "category": "movie",
+    "tags": ["movie","track","instrumental"],
+    "thumbnail": "assets/movie1.jpg",
+    "url": "videos/movie_heartbeats.mp4",
+    "duration": "2:58"
+  },
+  {
+    "id": "m2",
+    "title": "Punjabi Dance Mix",
+    "category": "music",
+    "tags": ["dance","party","punjabi"],
+    "thumbnail": "assets/dance1.jpg",
+    "url": "videos/punjabi_mix.mp4",
+    "duration": "4:05"
+  },
+  {
+    "id": "v2",
+    "title": "Learn HTML in 10 Minutes",
+    "category": "education",
+    "tags": ["html","web","tutorial"],
+    "thumbnail": "assets/html10min.jpg",
+    "url": "videos/html_10min.mp4",
+    "duration": "10:00"
+  },
+  {
+    "id": "m3",
+    "title": "Sad Piano - Emotional",
+    "category": "music",
+    "tags": ["instrumental","piano","emotional"],
+    "thumbnail": "assets/piano.jpg",
+    "url": "videos/sad_piano.mp4",
+    "duration": "3:22"
+  },
+  {
+    "id": "s2",
+    "title": "Love Shayari - Romantic Lines",
+    "category": "shayari",
+    "tags": ["love","shayari","romantic"],
+    "thumbnail": "assets/shayari2.jpg",
+    "url": "videos/shayari_romantic.mp4",
+    "duration": "1:45"
+  }
+]
