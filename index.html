@@ -3,55 +3,68 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>बुकमार्क ऐप</title>
+<title>बुकमार्क वेब ऐप</title>
 <style>
     body {
-        font-family: Arial, sans-serif;
-        background: #f4f7f8;
+        font-family: 'Segoe UI', sans-serif;
+        background: linear-gradient(120deg, #ffecd2, #fcb69f);
         margin: 0;
         padding: 0;
     }
     header {
-        background: #4CAF50;
+        background: #ff7e5f;
         color: white;
-        padding: 10px;
+        padding: 15px;
         text-align: center;
-        font-size: 22px;
+        font-size: 1.4em;
+        font-weight: bold;
     }
     .container {
-        max-width: 500px;
+        max-width: 600px;
         margin: auto;
         padding: 15px;
     }
+    .input-box {
+        display: flex;
+        gap: 10px;
+        margin-bottom: 15px;
+    }
     input, button {
         padding: 10px;
-        margin: 5px 0;
-        width: 100%;
-        box-sizing: border-box;
         border-radius: 5px;
+        border: none;
+        font-size: 1em;
+    }
+    input {
+        flex: 1;
         border: 1px solid #ccc;
     }
     button {
-        background: #4CAF50;
+        background: #ff7e5f;
         color: white;
-        font-size: 16px;
         cursor: pointer;
-        border: none;
     }
     button:hover {
-        background: #45a049;
+        background: #e76f51;
     }
-    .bookmark {
+    .search-box {
+        margin-bottom: 15px;
+    }
+    .bookmark-list {
+        list-style: none;
+        padding: 0;
+    }
+    .bookmark-item {
         background: white;
-        margin: 5px 0;
+        margin-bottom: 10px;
         padding: 10px;
-        border-radius: 5px;
+        border-radius: 8px;
         display: flex;
         justify-content: space-between;
         align-items: center;
         box-shadow: 0 2px 5px rgba(0,0,0,0.1);
     }
-    a {
+    .bookmark-item a {
         text-decoration: none;
         color: #333;
         font-weight: bold;
@@ -64,84 +77,85 @@
         border-radius: 5px;
         cursor: pointer;
     }
-    .delete-btn:hover {
-        background: darkred;
+    @media (max-width: 500px) {
+        .input-box {
+            flex-direction: column;
+        }
+        button {
+            width: 100%;
+        }
     }
 </style>
 </head>
 <body>
 
-<header>📑 मेरा बुकमार्क ऐप</header>
+<header>📚 मेरा बुकमार्क वेब ऐप</header>
 
 <div class="container">
-    <input type="text" id="siteName" placeholder="वेबसाइट का नाम लिखें">
-    <input type="url" id="siteURL" placeholder="वेबसाइट का URL लिखें (https://...)">
-    <button onclick="addBookmark()">बुकमार्क जोड़ें</button>
+    <div class="input-box">
+        <input type="text" id="title" placeholder="वेबसाइट का नाम लिखें">
+        <input type="url" id="url" placeholder="URL डालें">
+        <button onclick="addBookmark()">➕ जोड़ें</button>
+    </div>
 
-    <input type="text" id="searchBox" placeholder="बुकमार्क खोजें...">
+    <div class="search-box">
+        <input type="text" id="search" placeholder="सर्च करें...">
+    </div>
 
-    <div id="bookmarkList"></div>
+    <ul id="bookmarkList" class="bookmark-list"></ul>
 </div>
 
 <!-- Fuse.js CDN -->
 <script src="https://cdn.jsdelivr.net/npm/fuse.js/dist/fuse.min.js"></script>
+
 <script>
-    let bookmarks = JSON.parse(localStorage.getItem('bookmarks')) || [];
+    let bookmarks = JSON.parse(localStorage.getItem("bookmarks")) || [];
 
-    function saveBookmarks() {
-        localStorage.setItem('bookmarks', JSON.stringify(bookmarks));
-        displayBookmarks(bookmarks);
-    }
-
-    function addBookmark() {
-        let name = document.getElementById('siteName').value.trim();
-        let url = document.getElementById('siteURL').value.trim();
-
-        if (!name || !url) {
-            alert("कृपया नाम और URL भरें!");
-            return;
-        }
-
-        bookmarks.push({ name, url });
-        saveBookmarks();
-
-        document.getElementById('siteName').value = '';
-        document.getElementById('siteURL').value = '';
-    }
-
-    function deleteBookmark(index) {
-        if (confirm("क्या आप इसे डिलीट करना चाहते हैं?")) {
-            bookmarks.splice(index, 1);
-            saveBookmarks();
-        }
-    }
-
-    function displayBookmarks(list) {
-        let container = document.getElementById('bookmarkList');
-        container.innerHTML = '';
-        list.forEach((bookmark, index) => {
-            container.innerHTML += `
-                <div class="bookmark">
-                    <a href="${bookmark.url}" target="_blank">${bookmark.name}</a>
-                    <button class="delete-btn" onclick="deleteBookmark(${index})">हटाएं</button>
-                </div>
+    function renderBookmarks(list = bookmarks) {
+        const bookmarkList = document.getElementById("bookmarkList");
+        bookmarkList.innerHTML = "";
+        list.forEach((bm, index) => {
+            const li = document.createElement("li");
+            li.className = "bookmark-item";
+            li.innerHTML = `
+                <a href="${bm.url}" target="_blank">${bm.title}</a>
+                <button class="delete-btn" onclick="deleteBookmark(${index})">❌ हटाएँ</button>
             `;
+            bookmarkList.appendChild(li);
         });
     }
 
-    // Search with Fuse.js
-    document.getElementById('searchBox').addEventListener('input', function() {
-        let fuse = new Fuse(bookmarks, { keys: ['name', 'url'], threshold: 0.4 });
-        let result = fuse.search(this.value);
-        if (this.value.trim() === '') {
-            displayBookmarks(bookmarks);
+    function addBookmark() {
+        const title = document.getElementById("title").value.trim();
+        const url = document.getElementById("url").value.trim();
+        if (!title || !url) {
+            alert("कृपया नाम और URL भरें");
+            return;
+        }
+        bookmarks.push({ title, url });
+        localStorage.setItem("bookmarks", JSON.stringify(bookmarks));
+        document.getElementById("title").value = "";
+        document.getElementById("url").value = "";
+        renderBookmarks();
+    }
+
+    function deleteBookmark(index) {
+        bookmarks.splice(index, 1);
+        localStorage.setItem("bookmarks", JSON.stringify(bookmarks));
+        renderBookmarks();
+    }
+
+    document.getElementById("search").addEventListener("input", function () {
+        const fuse = new Fuse(bookmarks, { keys: ["title", "url"], threshold: 0.4 });
+        const result = fuse.search(this.value);
+        if (this.value.trim() === "") {
+            renderBookmarks();
         } else {
-            displayBookmarks(result.map(r => r.item));
+            renderBookmarks(result.map(r => r.item));
         }
     });
 
-    // Initial Load
-    displayBookmarks(bookmarks);
+    renderBookmarks();
 </script>
 
 </body>
