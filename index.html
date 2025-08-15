@@ -1,317 +1,341 @@
-
-<!doctype html>
+<!DOCTYPE html>
 <html lang="hi">
 <head>
-<meta charset="utf-8" />
-<meta name="viewport" content="width=device-width,initial-scale=1" />
-<title>Stylish Fast File Upload (Mobile)</title>
-<style>
-  /* Mobile-first clean UI */
-  :root{
-    --bg:#f0f2f5; --card:#fff; --accent:#5b6cff; --muted:#8b94a6;
-    --success:#22c55e; --danger:#ff6b6b; --radius:16px;
-  }
-  *{box-sizing:border-box; font-family:Inter, system-ui, Arial; -webkit-tap-highlight-color:transparent}
-  html,body{height:100%; margin:0; background:var(--bg); color:#222}
-  .wrap{min-height:100vh; display:flex; align-items:center; justify-content:center; padding:20px}
-  .card{
-    width:100%; max-width:420px; background:linear-gradient(180deg,#fff,#fbfcff);
-    border-radius:var(--radius); box-shadow:0 8px 30px rgba(20,30,60,0.08); padding:18px;
-  }
-  .header{display:flex; align-items:center; gap:12px}
-  .logo{background:linear-gradient(135deg,var(--accent),#8a6bff); width:44px;height:44px;border-radius:10px;display:flex;align-items:center;justify-content:center;color:#fff;font-weight:700;font-size:18px}
-  h1{font-size:18px;margin:0}
-  p.lead{margin:6px 0 14px;color:var(--muted);font-size:13px}
-  .drop{
-    border:2px dashed #e6e9f2; border-radius:12px; padding:18px; text-align:center; background:linear-gradient(180deg,rgba(91,108,255,0.03),transparent);
-  }
-  .btn{
-    display:inline-block;padding:10px 14px;border-radius:10px;background:var(--accent);color:#fff;border:0;cursor:pointer;font-weight:600;margin-top:10px;
-  }
-  input[type=file]{display:none}
-  .list{margin-top:14px; display:flex;flex-direction:column; gap:12px}
-  .file-row{background:#fff;border-radius:10px;padding:12px;display:flex;gap:12px;align-items:center;box-shadow:0 4px 12px rgba(16,24,40,0.03)}
-  .file-thumb{width:44px;height:44px;border-radius:8px;background:#f3f4f8;display:flex;align-items:center;justify-content:center;font-weight:700;color:var(--muted)}
-  .file-info{flex:1}
-  .file-name{font-weight:600;font-size:14px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
-  .file-meta{font-size:12px;color:var(--muted);margin-top:4px}
-  .progress{height:8px;background:#f1f3f8;border-radius:999px;margin-top:10px;overflow:hidden}
-  .bar{height:100%; width:0%; background:linear-gradient(90deg,var(--accent),#7b9cff)}
-  .controls{display:flex;gap:8px}
-  .small{font-size:13px;padding:8px 10px;border-radius:8px;border:1px solid #e6e9f2;background:#fff;cursor:pointer}
-  .status{font-size:13px}
-  .completed{color:var(--success);font-weight:600}
-  .error{color:var(--danger);font-weight:600}
-  .muted{color:var(--muted)}
-  .footer{margin-top:14px;text-align:center;font-size:12px;color:var(--muted)}
-  @media(min-width:720px){ .card{max-width:640px} }
-</style>
-</head>
-<body>
-<div class="wrap">
-  <div class="card">
-    <div class="header">
-      <div class="logo">UP</div>
-      <div>
-        <h1>Upload Files — Super Fast</h1>
-        <p class="lead">Koi bhi format — images, videos, pdf, .exe, .zip — upto 5GB. Resume & chunked upload.</p>
-      </div>
-    </div>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Secure Note Locker — CryptoJS + Validator.js + FingerprintJS (Single File)</title>
 
-    <div style="height:12px"></div>
+  <!-- Tailwind (CDN) सिर्फ़ UI के लिए -->
+  <script src="https://cdn.tailwindcss.com"></script>
 
-    <label class="drop" id="dropzone">
-      <div style="font-size:20px; color:var(--muted)">☁️</div>
-      <div style="font-weight:600; margin-top:6px">Choose a file or drag & drop</div>
-      <div class="muted" style="font-size:13px; margin-top:6px">All formats allowed • Max 5 GB</div>
-      <button class="btn" id="browseBtn" type="button">Browse File</button>
-      <input id="fileInput" type="file" />
-    </label>
+  <!-- CryptoJS (AES/Hash) -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/crypto-js/4.2.0/crypto-js.min.js" integrity="sha512-fuV9Wm0YtQ2nqj3mJvZkfhRkY8n+0v6k8t07xQ7mG6B3uGqD7tRDbJkK9Lr0bJ8z1c7qWqn0wGmJfR2KelG1Bw==" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
 
-    <div class="list" id="fileList"></div>
+  <!-- validator.js (फॉर्म वैलिडेशन) -->
+  <script src="https://cdn.jsdelivr.net/npm/validator@13.11.0/validator.min.js"></script>
 
-    <div class="footer">Tip: Use good internet & server with plenty of bandwidth for fastest uploads.</div>
-  </div>
-</div>
+  <!-- FingerprintJS v3 (डिवाइस फिंगरप्रिंट) -->
+  <script async src="https://openfpcdn.io/fingerprintjs/v3"></script>
 
-<script>
-/*
-  Frontend chunked uploader (single file).
-  How it works:
-  - Splits file into chunks (default chunkSize = 5 MB)
-  - Uploads chunks in parallel (concurrency = 3)
-  - Tracks progress and retries failed chunks up to retryLimit
-  - Supports basic resume: server should respond to /upload/status?fileId=... with already-received indexes
-  - fileId is generated as sha1-ish from name+size+lastModified (simple hash)
-*/
-
-/* ---------- CONFIG ---------- */
-const MAX_FILE_SIZE = 5 * 1024 * 1024 * 1024; // 5GB
-let CHUNK_SIZE = 5 * 1024 * 1024; // 5MB default chunk size (adjustable)
-const CONCURRENCY = 3; // parallel uploads
-const RETRY_LIMIT = 3;
-
-/* ---------- END CONFIG ---------- */
-
-const fileInput = document.getElementById('fileInput');
-const dropzone = document.getElementById('dropzone');
-const browseBtn = document.getElementById('browseBtn');
-const fileList = document.getElementById('fileList');
-
-// server endpoints - change to your production endpoints
-const UPLOAD_URL = '/upload';           // POST chunk
-const STATUS_URL = '/upload/status';    // GET ?fileId=...
-const COMPLETE_URL = '/upload/complete';// POST to finalize
-
-// utility: simple hash -> not cryptographic but ok for id
-function simpleHash(str){
-  let h=2166136261>>>0;
-  for(let i=0;i<str.length;i++){ h = Math.imul(h ^ str.charCodeAt(i), 16777619); }
-  return (h>>>0).toString(36);
-}
-
-browseBtn.addEventListener('click', ()=> fileInput.click());
-fileInput.addEventListener('change', e => handleFiles(e.target.files));
-['dragenter','dragover'].forEach(ev => {
-  dropzone.addEventListener(ev, e => { e.preventDefault(); dropzone.style.borderColor = '#d6dbff' });
-});
-['dragleave','drop'].forEach(ev => {
-  dropzone.addEventListener(ev, e => { e.preventDefault(); dropzone.style.borderColor = '#e6e9f2'; });
-});
-dropzone.addEventListener('drop', e => {
-  if(e.dataTransfer && e.dataTransfer.files) handleFiles(e.dataTransfer.files);
-});
-
-function handleFiles(files){
-  if(!files || files.length===0) return;
-  for(const f of files){
-    if(f.size > MAX_FILE_SIZE){ alert('File exceeds 5GB limit'); continue; }
-    createFileRow(f);
-  }
-}
-
-function createFileRow(file){
-  const id = simpleHash(file.name + '::' + file.size + '::' + file.lastModified);
-  const row = document.createElement('div'); row.className = 'file-row';
-  row.dataset.fileId = id;
-
-  row.innerHTML = `
-    <div class="file-thumb">${file.name.split('.').pop().slice(0,3).toUpperCase()}</div>
-    <div class="file-info">
-      <div class="file-name">${file.name}</div>
-      <div class="file-meta muted">${(file.size/1024/1024).toFixed(2)} MB</div>
-      <div class="progress"><div class="bar" style="width:0%"></div></div>
-    </div>
-    <div style="display:flex;flex-direction:column;align-items:flex-end">
-      <div class="status muted">Queued</div>
-      <div class="controls" style="margin-top:8px">
-        <button class="small start">Start</button>
-        <button class="small cancel">Cancel</button>
-      </div>
-    </div>
-  `;
-
-  fileList.prepend(row);
-
-  const startBtn = row.querySelector('.start');
-  const cancelBtn = row.querySelector('.cancel');
-  const statusEl = row.querySelector('.status');
-  const bar = row.querySelector('.bar');
-
-  let controller = { abort:false };
-
-  startBtn.addEventListener('click', ()=> {
-    startBtn.disabled = true;
-    statusEl.textContent = 'Preparing...';
-    uploadFile(file, id, {
-      onProgress: p => { bar.style.width = p + '%'; statusEl.textContent = `Uploading ${p.toFixed(1)}%`; },
-      onComplete: () => { bar.style.width = '100%'; statusEl.textContent = 'Completed'; statusEl.className='status completed'; startBtn.style.display='none'; },
-      onError: (err) => { statusEl.textContent = 'Error: ' + err; statusEl.className='status error'; startBtn.disabled = false; },
-      signalObj: controller
-    });
-  });
-
-  cancelBtn.addEventListener('click', ()=> {
-    controller.abort = true;
-    statusEl.textContent = 'Cancelled';
-    statusEl.className='status muted';
-    startBtn.disabled = false;
-  });
-}
-
-/* ---------- Upload logic ---------- */
-async function uploadFile(file, fileId, opts){
-  opts = opts || {};
-  const totalSize = file.size;
-  // dynamic chunk sizing for super large files: increase chunk size if file big
-  let chunkSize = CHUNK_SIZE;
-  if(totalSize > 500 * 1024 * 1024) chunkSize = 10 * 1024 * 1024; // 10MB for >500MB
-  if(totalSize > 2 * 1024 * 1024 * 1024) chunkSize = 20 * 1024 * 1024; // 20MB for >2GB
-
-  const totalChunks = Math.ceil(totalSize / chunkSize);
-
-  // ask server which chunks already present (for resume)
-  let uploadedSet = new Set();
-  try {
-    const qs = new URLSearchParams({ fileId, fileName: file.name, fileSize: totalSize });
-    const res = await fetch(STATUS_URL + '?' + qs.toString());
-    if(res.ok){
-      const json = await res.json();
-      if(Array.isArray(json.received)) json.received.forEach(i => uploadedSet.add(i));
+  <style>
+    /* कुछ subtle custom styles */
+    .glass {
+      backdrop-filter: blur(10px);
+      background: rgba(255,255,255,0.75);
     }
-  } catch(e){
-    // ignore - server might not support status
-  }
+    .mono { font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono","Courier New", monospace; }
+    .fade-in { animation: fade 0.4s ease-in-out; }
+    @keyframes fade { from {opacity:.4; transform: translateY(4px);} to {opacity:1; transform: translateY(0);} }
+  </style>
+</head>
+<body class="min-h-screen bg-gradient-to-br from-slate-900 via-slate-800 to-slate-900 text-slate-100">
+  <div class="max-w-4xl mx-auto px-4 py-8">
+    <header class="mb-8">
+      <h1 class="text-3xl md:text-4xl font-bold tracking-tight">🔐 Secure Note Locker</h1>
+      <p class="text-slate-300 mt-1">CryptoJS + Validator.js + FingerprintJS + AJAX (Single File)</p>
+    </header>
 
-  let uploadedBytes = 0;
-  // compute already uploaded bytes
-  uploadedSet.forEach(i => {
-    const end = Math.min((i+1)*chunkSize, totalSize);
-    uploadedBytes += (end - i*chunkSize);
-  });
+    <main class="grid lg:grid-cols-5 gap-6 items-start">
+      <!-- Left: Form -->
+      <section class="lg:col-span-3 glass rounded-2xl shadow-xl p-5 md:p-6 fade-in">
+        <h2 class="text-xl font-semibold mb-4">📝 अपनी Secure Note बनाएं</h2>
+        <form id="noteForm" class="space-y-4" autocomplete="off" novalidate>
+          <!-- Email -->
+          <div>
+            <label for="email" class="block text-sm font-medium text-slate-200 mb-1">ईमेल</label>
+            <input id="email" type="email" class="w-full rounded-xl px-3 py-2 bg-slate-900/60 border border-slate-700 focus:outline-none focus:ring-2 focus:ring-indigo-500" placeholder="name@example.com"/>
+            <p id="emailHelp" class="text-xs text-slate-400 mt-1">ईमेल सही होना चाहिए (validator.js से चेक)</p>
+          </div>
 
-  const onProgress = opts.onProgress || function(){};
-  const signalObj = opts.signalObj || { abort:false };
+          <!-- Password -->
+          <div>
+            <label for="password" class="block text-sm font-medium text-slate-200 mb-1">पासवर्ड</label>
+            <input id="password" type="password" class="w-full rounded-xl px-3 py-2 bg-slate-900/60 border border-slate-700 focus:outline-none focus:ring-2 focus:ring-indigo-500" placeholder="कम से कम 8 अक्षर + 1 नंबर + 1 स्पेशल"/>
+            <p id="pwdHelp" class="text-xs text-slate-400 mt-1">मज़बूत पासवर्ड रखें; यही एन्क्रिप्शन की के तौर पर यूज़ होगा।</p>
+          </div>
 
-  // prepare queue of chunk indexes to upload
-  const queue = [];
-  for(let i=0;i<totalChunks;i++){
-    if(!uploadedSet.has(i)) queue.push(i);
-  }
+          <!-- Note -->
+          <div>
+            <label for="note" class="block text-sm font-medium text-slate-200 mb-1">नोट (टेक्स्ट)</label>
+            <textarea id="note" rows="6" class="w-full rounded-xl px-3 py-2 bg-slate-900/60 border border-slate-700 focus:outline-none focus:ring-2 focus:ring-indigo-500" placeholder="यहाँ अपना नोट लिखें…"></textarea>
+            <div class="flex items-center justify-between mt-2">
+              <button type="button" id="btnEncrypt" class="rounded-xl px-4 py-2 bg-indigo-600 hover:bg-indigo-500 active:bg-indigo-700 transition">Encrypt & Save</button>
+              <div class="text-xs text-slate-400">लोकलस्टोरेज में केवल <em>encrypted</em> डेटा सेव होगा।</div>
+            </div>
+          </div>
 
-  let active = 0;
-  let idxPointer = 0;
-  let retries = {};
+          <!-- Actions -->
+          <div class="flex flex-wrap gap-2 pt-2">
+            <button type="button" id="btnDecrypt" class="rounded-xl px-4 py-2 bg-emerald-600 hover:bg-emerald-500 active:bg-emerald-700 transition">Decrypt Note</button>
+            <button type="button" id="btnCopy" class="rounded-xl px-4 py-2 bg-slate-700 hover:bg-slate-600 active:bg-slate-800 transition">Copy Decrypted</button>
+            <button type="button" id="btnClear" class="rounded-xl px-4 py-2 bg-rose-600 hover:bg-rose-500 active:bg-rose-700 transition">Clear Storage</button>
+            <button type="button" id="btnSync" class="rounded-xl px-4 py-2 bg-teal-600 hover:bg-teal-500 active:bg-teal-700 transition">AJAX Sync</button>
+          </div>
+        </form>
 
-  return new Promise((resolve, reject) => {
-    function next(){
-      if(signalObj.abort){ reject('aborted'); return; }
-      if(uploadedBytes >= totalSize){
-        // finalize
-        finalizeUpload().then(()=>{ onProgress(100); resolve(); }).catch(err=>reject(err));
+        <!-- Validation / Status -->
+        <div id="status" class="mt-4 text-sm"></div>
+      </section>
+
+      <!-- Right: Info / Output -->
+      <aside class="lg:col-span-2 space-y-6">
+        <div class="glass rounded-2xl shadow-xl p-5 md:p-6 fade-in">
+          <h3 class="text-lg font-semibold mb-2">🆔 डिवाइस फ़िंगरप्रिंट</h3>
+          <p class="text-sm text-slate-300">FingerprintJS से जेनरेट किया गया यूनिक ID:</p>
+          <pre id="fpOut" class="mono bg-slate-900/60 border border-slate-700 rounded-xl p-3 mt-2 text-xs whitespace-pre-wrap break-all">Generating…</pre>
+        </div>
+
+        <div class="glass rounded-2xl shadow-xl p-5 md:p-6 fade-in">
+          <h3 class="text-lg font-semibold mb-2">🔎 डिक्रिप्टेड आउटपुट</h3>
+          <pre id="out" class="mono bg-slate-900/60 border border-slate-700 rounded-xl p-3 text-sm whitespace-pre-wrap break-words min-h-[120px]">—</pre>
+        </div>
+
+        <div class="glass rounded-2xl shadow-xl p-5 md:p-6 fade-in">
+          <h3 class="text-lg font-semibold mb-2">🌐 AJAX Response</h3>
+          <p class="text-sm text-slate-300">डेमो POST: <span class="underline decoration-dotted">https://httpbin.org/post</span></p>
+          <pre id="ajaxOut" class="mono bg-slate-900/60 border border-slate-700 rounded-xl p-3 text-xs whitespace-pre-wrap break-all min-h-[120px]">—</pre>
+        </div>
+      </aside>
+    </main>
+
+    <footer class="mt-10 text-center text-xs text-slate-400">
+      Made with ❤️ using CryptoJS, Validator.js, FingerprintJS & fetch
+    </footer>
+  </div>
+
+  <script>
+    // -------------------------------
+    // Utility Helpers
+    // -------------------------------
+    const $ = (id) => document.getElementById(id);
+
+    function setStatus(msg, type = "info") {
+      const el = $("status");
+      const base = "mt-4 text-sm px-3 py-2 rounded-xl border ";
+      const color = {
+        info:   "bg-slate-900/60 border-slate-700 text-slate-200",
+        ok:     "bg-emerald-900/40 border-emerald-700 text-emerald-200",
+        warn:   "bg-amber-900/40 border-amber-700 text-amber-200",
+        err:    "bg-rose-900/40 border-rose-700 text-rose-200",
+      }[type] || color.info;
+
+      el.className = base + color;
+      el.textContent = msg;
+    }
+
+    function validateEmail(email) {
+      return validator.isEmail(email || "");
+    }
+
+    function validatePassword(pwd) {
+      // कम से कम 8, एक नंबर, एक स्पेशल
+      if (typeof pwd !== "string") return false;
+      const longEnough = pwd.length >= 8;
+      const hasNum = /\d/.test(pwd);
+      const hasSpecial = /[^A-Za-z0-9]/.test(pwd);
+      return longEnough && hasNum && hasSpecial;
+    }
+
+    function encryptNote(note, password) {
+      // AES एन्क्रिप्शन
+      return CryptoJS.AES.encrypt(note, password).toString();
+    }
+
+    function decryptNote(cipherText, password) {
+      try {
+        const bytes = CryptoJS.AES.decrypt(cipherText, password);
+        const text = bytes.toString(CryptoJS.enc.Utf8);
+        return text || null;
+      } catch (e) {
+        return null;
+      }
+    }
+
+    function sha256Hex(text) {
+      return CryptoJS.SHA256(text).toString(CryptoJS.enc.Hex);
+    }
+
+    // -------------------------------
+    // FingerprintJS Init
+    // -------------------------------
+    let FP_VISITOR_ID = null;
+
+    async function initFingerprint() {
+      try {
+        // global FingerprintJS loaded from CDN (v3)
+        const fp = await FingerprintJS.load({ monitoring: false });
+        const result = await fp.get();
+        FP_VISITOR_ID = result.visitorId;
+        $("fpOut").textContent = FP_VISITOR_ID;
+      } catch (err) {
+        $("fpOut").textContent = "Fingerprint error: " + err?.message;
+      }
+    }
+
+    // -------------------------------
+    // App Logic
+    // -------------------------------
+    const LS_KEY = "secure_note_encrypted_v1";
+    const LS_META = "secure_note_meta_v1"; // email hash + fp snapshot
+
+    function persist(cipher, meta) {
+      localStorage.setItem(LS_KEY, cipher);
+      localStorage.setItem(LS_META, JSON.stringify(meta || {}));
+    }
+
+    function loadPersisted() {
+      return {
+        cipher: localStorage.getItem(LS_KEY),
+        meta: JSON.parse(localStorage.getItem(LS_META) || "{}"),
+      };
+    }
+
+    function clearPersisted() {
+      localStorage.removeItem(LS_KEY);
+      localStorage.removeItem(LS_META);
+    }
+
+    async function handleEncrypt() {
+      const email = $("email").value.trim();
+      const password = $("password").value;
+      const note = $("note").value;
+
+      // Validation
+      if (!validateEmail(email)) {
+        setStatus("ईमेल वैध नहीं है।", "warn");
         return;
       }
-      while(active < CONCURRENCY && idxPointer < queue.length){
-        const chunkIndex = queue[idxPointer++];
-        active++;
-        sendChunkWithRetry(chunkIndex).then(bytesSent=>{
-          active--;
-          uploadedBytes += bytesSent;
-          onProgress((uploadedBytes/totalSize)*100);
-          if(uploadedBytes >= totalSize){
-            next();
-          } else {
-            next();
-          }
-        }).catch(err=>{
-          active--;
-          reject(err);
+      if (!validatePassword(password)) {
+        setStatus("पासवर्ड स्ट्रॉन्ग नहीं है (8+, नंबर, स्पेशल).", "warn");
+        return;
+      }
+      if (!note) {
+        setStatus("कृपया नोट टाइप करें।", "warn");
+        return;
+      }
+
+      const cipher = encryptNote(note, password);
+      const meta = {
+        emailHash: sha256Hex(email),
+        fp: FP_VISITOR_ID || "(unavailable)",
+        ts: new Date().toISOString(),
+      };
+      persist(cipher, meta);
+
+      $("out").textContent = "Encrypted & saved! (Decrypt करने के लिए पासवर्ड डालें)";
+      setStatus("नोट एन्क्रिप्ट होकर लोकलस्टोरेज में सेव हो गया।", "ok");
+    }
+
+    async function handleDecrypt() {
+      const password = $("password").value;
+      const { cipher } = loadPersisted();
+
+      if (!cipher) {
+        setStatus("कोई सेव्ड एन्क्रिप्टेड नोट नहीं मिला।", "warn");
+        $("out").textContent = "—";
+        return;
+      }
+      if (!password) {
+        setStatus("पहले पासवर्ड दर्ज करें।", "warn");
+        return;
+      }
+
+      const text = decryptNote(cipher, password);
+      if (text === null) {
+        setStatus("डिक्रिप्शन असफल — शायद गलत पासवर्ड।", "err");
+        $("out").textContent = "—";
+        return;
+      }
+
+      $("out").textContent = text;
+      setStatus("डिक्रिप्शन सफल!", "ok");
+    }
+
+    async function handleCopy() {
+      const text = $("out").textContent;
+      if (text && text !== "—") {
+        await navigator.clipboard.writeText(text);
+        setStatus("डिक्रिप्टेड नोट क्लिपबोर्ड में कॉपी हो गया।", "ok");
+      } else {
+        setStatus("कॉपी करने के लिए पहले डिक्रिप्ट करें।", "warn");
+      }
+    }
+
+    function handleClear() {
+      clearPersisted();
+      $("out").textContent = "—";
+      setStatus("लोकलस्टोरेज क्लियर कर दिया गया।", "ok");
+    }
+
+    async function handleSync() {
+      const { cipher, meta } = loadPersisted();
+      if (!cipher) {
+        setStatus("सिंक करने के लिए पहले Encrypt & Save करें।", "warn");
+        return;
+      }
+      setStatus("AJAX Sync चल रहा है…", "info");
+
+      const payload = {
+        encrypted: cipher,
+        meta: {
+          ...meta,
+          fpLive: FP_VISITOR_ID || "(unavailable)",
+        },
+        // डेमो के लिए: हैश्ड ईमेल और फिंगरप्रिंट ही भेज रहे हैं
+      };
+
+      try {
+        // Demo endpoint: httpbin echoes back your POST
+        const res = await fetch("https://httpbin.org/post", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify(payload),
         });
-      }
-      // if no active and pointer done but uploadedBytes < totalSize -> means waiting for finalize or something
-      if(active === 0 && idxPointer >= queue.length && uploadedBytes < totalSize){
-        // maybe some pending chunks errored out and retries exhausted
-        // wait briefly
-        setTimeout(()=>{ if(active===0 && uploadedBytes < totalSize) reject('Failed to upload some chunks'); }, 2000);
+
+        const data = await res.json();
+        $("ajaxOut").textContent = JSON.stringify({
+          status: res.status,
+          json: data.json,
+          headers: data.headers,
+          origin: data.origin
+        }, null, 2);
+
+        setStatus("AJAX Sync सफल! (डेमो रिस्पॉन्स देखें)", "ok");
+      } catch (err) {
+        $("ajaxOut").textContent = "AJAX Error: " + (err?.message || String(err));
+        setStatus("AJAX विफल — शायद इंटरनेट/नेटवर्क समस्या।", "err");
       }
     }
 
-    async function sendChunkWithRetry(i){
-      let attempts = retries[i] || 0;
-      while(attempts < RETRY_LIMIT){
-        try {
-          const sent = await sendChunk(i);
-          return sent;
-        } catch(e){
-          attempts++;
-          retries[i] = attempts;
-          console.warn('Chunk', i, 'failed attempt', attempts, e);
-          await new Promise(r => setTimeout(r, 500 * attempts));
-        }
+    // -------------------------------
+    // Events
+    // -------------------------------
+    $("btnEncrypt").addEventListener("click", handleEncrypt);
+    $("btnDecrypt").addEventListener("click", handleDecrypt);
+    $("btnCopy").addEventListener("click", handleCopy);
+    $("btnClear").addEventListener("click", handleClear);
+    $("btnSync").addEventListener("click", handleSync);
+
+    // कुछ UX हिन्ट्स लाइव:
+    $("email").addEventListener("input", (e) => {
+      $("emailHelp").textContent = validateEmail(e.target.value) ? "ईमेल मान्य ✅" : "ईमेल सही होना चाहिए";
+    });
+
+    $("password").addEventListener("input", (e) => {
+      $("pwdHelp").textContent = validatePassword(e.target.value) ? "पासवर्ड स्ट्रॉन्ग ✅" : "कम से कम 8 अक्षर + 1 नंबर + 1 स्पेशल";
+    });
+
+    // Init on load
+    window.addEventListener("load", () => {
+      initFingerprint();
+      // अगर पहले से डेटा है तो बताएं
+      const { cipher } = loadPersisted();
+      if (cipher) {
+        setStatus("एक एन्क्रिप्टेड नोट पहले से सेव्ड है। डिक्रिप्ट करने के लिए पासवर्ड डालें।", "info");
+      } else {
+        setStatus("नया नोट लिखें, Encrypt & Save दबाएँ।", "info");
       }
-      throw('Chunk ' + i + ' failed after retries');
-    }
-
-    async function sendChunk(i){
-      if(signalObj.abort) throw('aborted');
-      const start = i * chunkSize;
-      const end = Math.min(start + chunkSize, totalSize);
-      const blob = file.slice(start, end);
-      // upload via fetch
-      const form = new FormData();
-      form.append('chunk', blob);
-      form.append('fileId', fileId);
-      form.append('fileName', file.name);
-      form.append('chunkIndex', i);
-      form.append('totalChunks', totalChunks);
-
-      const resp = await fetch(UPLOAD_URL, {
-        method:'POST',
-        body: form,
-      });
-      if(!resp.ok) {
-        const text = await resp.text().catch(()=>resp.statusText);
-        throw(text || 'Upload chunk failed');
-      }
-      // assume server returns JSON { ok:true }
-      return (end - start);
-    }
-
-    async function finalizeUpload(){
-      // tell server to assemble
-      const resp = await fetch(COMPLETE_URL, {
-        method:'POST',
-        headers:{ 'Content-Type':'application/json' },
-        body: JSON.stringify({ fileId, fileName: file.name, fileSize: totalSize })
-      });
-      if(!resp.ok) throw('Finalize error');
-      return await resp.json();
-    }
-
-    // start initial workers
-    next();
-  });
-}
-</script>
+    });
+  </script>
 </body>
 </html>
