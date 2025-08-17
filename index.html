@@ -1,402 +1,68 @@
-<!doctype html>
-<html lang="hi">
+<!DOCTYPE html>
+<html>
+
 <head>
-<meta charset="utf-8" />
-<meta name="viewport" content="width=device-width,initial-scale=1" />
-<title>Superb Music Player • Single File</title>
-<style>
-  :root{
-    --bg:#0f1220; --card:#171a2b; --accent:#7c5cff; --accent2:#38bdf8;
-    --txt:#e6e6f0; --muted:#9aa0b3; --good:#22c55e; --warn:#f59e0b;
-    --radius:18px;
-  }
-  *{box-sizing:border-box}
-  body{
-    margin:0; font-family:system-ui,-apple-system,Segoe UI,Roboto,Ubuntu,"Noto Sans",sans-serif;
-    background: radial-gradient(1200px 600px at 10% -10%, #1b2040 0%, #0f1220 50%, #0b0e1a 100%);
-    color:var(--txt); min-height:100svh; display:flex; align-items:center; justify-content:center; padding:16px;
-  }
-  .player{
-    width:min(900px,95vw); background:linear-gradient(180deg,#1a1f3a, #121528);
-    border:1px solid #222640; border-radius:var(--radius); box-shadow:0 20px 60px rgb(0 0 0 / 40%);
-    overflow:hidden; display:grid; grid-template-columns: 1.15fr 1fr; gap:0;
-  }
-  @media (max-width:860px){ .player{ grid-template-columns: 1fr; } }
-  .left{
-    padding:22px; border-right:1px solid #232643; display:flex; flex-direction:column; gap:16px;
-  }
-  .right{
-    padding:16px; display:flex; flex-direction:column; gap:12px;
-  }
-  .title{
-    display:flex; align-items:center; gap:12px; font-weight:700; letter-spacing:.3px;
-  }
-  .logo{ width:34px; height:34px; display:grid; place-items:center; border-radius:10px; background:linear-gradient(135deg,var(--accent),var(--accent2)); box-shadow:0 6px 22px rgb(60 100 255 / 40%); font-weight:800 }
-  .dropzone{
-    border:2px dashed #2a2f55; border-radius:16px; padding:16px; text-align:center; color:var(--muted);
-    transition:.2s; background:linear-gradient(180deg, #14183a80, #0f133280);
-  }
-  .dropzone.drag{ border-color:var(--accent2); color:#cdefff; transform:scale(1.01) }
-  .controls{
-    display:grid; grid-template-columns: auto 1fr auto; gap:12px; align-items:center; background:#0e1125;
-    border:1px solid #1f2342; border-radius:14px; padding:10px 12px;
-  }
-  .btn{
-    appearance:none; border:0; background:#1a1f3d; color:var(--txt); padding:10px 12px; border-radius:12px;
-    cursor:pointer; transition:.15s; font-weight:600; min-width:40px;
-  }
-  .btn:hover{ filter:brightness(1.15) }
-  .btn.primary{ background:linear-gradient(135deg,var(--accent),#5d65ff); box-shadow:0 8px 24px rgb(92 87 255 / 40%); }
-  .btn.ghost{ background:transparent; border:1px solid #2a2f55 }
-  .now{
-    display:flex; align-items:center; gap:14px;
-  }
-  .cover{
-    width:68px; height:68px; border-radius:14px; background:linear-gradient(135deg,#303769,#181c3e); border:1px solid #272c53;
-    overflow:hidden; flex:0 0 auto; display:grid; place-items:center; font-weight:800; color:#c6cbff;
-  }
-  .meta{ display:grid; gap:4px }
-  .track{ font-size:16px; font-weight:700 }
-  .artist{ color:var(--muted); font-size:13px }
-  .seek{
-    display:grid; gap:6px;
-  }
-  .range{
-    position:relative; height:8px; background:#1b2041; border-radius:999px; cursor:pointer; border:1px solid #262a52;
-  }
-  .fill{ position:absolute; inset:0 100% 0 0; background:linear-gradient(90deg,var(--accent),var(--accent2)); border-radius:999px }
-  .thumb{ position:absolute; top:50%; transform:translate(-50%,-50%); width:14px; height:14px; background:#fff; border-radius:50%; box-shadow:0 2px 8px rgb(0 0 0 / 35%); left:0% }
-  .time{ display:flex; justify-content:space-between; font-size:12px; color:#b9bfd6 }
-  .bottom{
-    display:grid; grid-template-columns: repeat(6,auto) 1fr auto; align-items:center; gap:8px;
-  }
-  .vol{ display:flex; align-items:center; gap:8px; min-width:140px }
-  .vol input[type="range"]{ width:120px }
-  input[type="range"]{
-    -webkit-appearance:none; appearance:none; height:6px; border-radius:999px; background:#1b2041; outline:none;
-  }
-  input[type="range"]::-webkit-slider-thumb{
-    -webkit-appearance:none; appearance:none; width:16px; height:16px; border-radius:50%; background:linear-gradient(135deg,var(--accent),var(--accent2));
-    border:2px solid #e9eaff; box-shadow:0 2px 8px rgb(0 0 0 / 35%);
-  }
-  .plist{
-    list-style:none; padding:0; margin:0; overflow:auto; max-height:56svh; border:1px solid #24284c; border-radius:14px; background:#0f1230;
-  }
-  .item{
-    display:grid; grid-template-columns: auto 1fr auto; gap:10px; align-items:center; padding:12px 14px; border-bottom:1px solid #1b2050; cursor:pointer;
-  }
-  .item:last-child{ border-bottom:0 }
-  .item:hover{ background:#12163a }
-  .item .ix{ width:28px; text-align:center; color:#9aa3c7 }
-  .item.active{ background:linear-gradient(90deg, #151a44, #101437); border-left:3px solid var(--accent2) }
-  .badge{ font-size:11px; padding:4px 8px; border-radius:99px; background:#1b224d; color:#cbd5ff; border:1px solid #26306a }
-  .kbd{ font-family: ui-monospace, SFMono-Regular, Menlo, monospace; font-size:12px; padding:2px 6px; border-radius:6px; border:1px solid #2a2e56; color:#cdd1ec; background:#111533 }
-  .row{ display:flex; gap:10px; flex-wrap:wrap; align-items:center }
-  .muted{ color:var(--muted) }
-  .small{ font-size:12px }
-  .hidden{ display:none }
-</style>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width">
+  <title>Random Website Viewer</title>
+  <link href="style.css" rel="stylesheet" type="text/css" />
 </head>
+
 <body>
-  <div class="player" id="app">
-    <div class="left">
-      <div class="title"><div class="logo">♫</div> <div>Superb <span style="opacity:.75">Music Player</span></div></div>
-
-      <div id="drop" class="dropzone">
-        <div><strong>Drag & Drop</strong> करके MP3 फाइलें यहाँ छोड़ें या <label for="file" class="btn ghost" style="display:inline-block; padding:.35rem .6rem; margin:.25rem 0;">Add Songs</label></div>
-        <input id="file" class="hidden" type="file" accept="audio/mpeg,audio/mp3" multiple />
-        <div class="small muted">Tip: आप <span class="kbd">Ctrl/Cmd + O</span> से भी फाइल पिक कर सकते हैं</div>
+  <div class="container">
+    <h1>Random Website Page Viewer</h1>
+    
+    <div class="stats">
+      <div class="stat-item">
+        <span class="stat-label">Pages Viewed:</span>
+        <span id="pageCount" class="stat-value">0</span>
       </div>
-
-      <ul id="list" class="plist"></ul>
-      <div class="small muted">⏱ शॉर्टकट: <span class="kbd">Space</span> Play/Pause • <span class="kbd">←/→</span> Seek • <span class="kbd">↑/↓</span> Volume • <span class="kbd">N/P</span> Next/Prev • <span class="kbd">S</span> Shuffle • <span class="kbd">R</span> Repeat</div>
+      <div class="stat-item">
+        <span class="stat-label">Total URLs:</span>
+        <span id="totalUrls" class="stat-value">0</span>
+      </div>
+    </div>
+    
+    <div class="input-section">
+      <div class="input-options">
+        <label>
+          <input type="radio" name="inputType" value="urls" checked> 
+          Enter URLs manually
+        </label>
+        <label>
+          <input type="radio" name="inputType" value="sitemap"> 
+          Load from Sitemap XML
+        </label>
+      </div>
+      
+      <div id="urlInputSection">
+        <textarea id="urlInput" placeholder="Paste URLs here (they will auto-format, one per line)&#10;Example:&#10;https://www.google.com&#10;https://www.github.com&#10;https://www.stackoverflow.com" rows="6"></textarea>
+        <div class="url-buttons">
+          <button id="clearUrlsBtn" type="button">Clear All URLs</button>
+          <button id="addSampleUrlsBtn" type="button">Add Sample URLs</button>
+        </div>
+      </div>
+      
+      <input type="url" id="sitemapInput" placeholder="Enter sitemap XML URL (e.g., https://gyanipanda.com/post-sitemap.xml)" style="display: none;">
+      
+      <button id="startBtn">Start Random Viewing</button>
+      <button id="stopBtn" disabled>Stop</button>
     </div>
 
-    <div class="right">
-      <div class="now">
-        <div class="cover" id="cover">♪</div>
-        <div class="meta">
-          <div class="track" id="trackName">कोई गाना नहीं</div>
-          <div class="artist" id="artistName">Add songs to start</div>
-        </div>
-      </div>
+    <div class="status">
+      <p id="statusText">Enter URLs above and click Start</p>
+      <p id="timerText"></p>
+      <p id="currentUrlText"></p>
+    </div>
 
-      <div class="seek">
-        <div class="range" id="seekBar" aria-label="Seek">
-          <div class="fill" id="seekFill"></div>
-          <div class="thumb" id="seekThumb"></div>
-        </div>
-        <div class="time"><span id="cur">00:00</span><span id="dur">00:00</span></div>
-      </div>
-
-      <div class="controls">
-        <div class="row">
-          <button class="btn ghost" id="btnPrev" title="Previous">⏮</button>
-          <button class="btn primary" id="btnPlay" title="Play/Pause">▶</button>
-          <button class="btn ghost" id="btnNext" title="Next">⏭</button>
-        </div>
-        <div class="row">
-          <button class="btn ghost" id="btnShuffle" title="Shuffle">🔀</button>
-          <button class="btn ghost" id="btnRepeat" title="Repeat">🔁</button>
-          <button class="btn ghost" id="btnStop" title="Stop">⏹</button>
-        </div>
-        <div class="row vol">
-          <button class="btn ghost" id="btnMute" title="Mute">🔈</button>
-          <input id="vol" type="range" min="0" max="1" step="0.01" value="0.9" />
-        </div>
-      </div>
-
-      <div class="bottom">
-        <span class="badge" id="mode">Normal</span>
-        <span class="muted small">Status: <span id="status">Idle</span></span>
-        <div style="justify-self:end" class="muted small">Made with ❤️ — Works offline (local files)</div>
-      </div>
+    <div class="iframe-container">
+      <iframe id="websiteFrame" src="about:blank"></iframe>
     </div>
   </div>
 
-  <audio id="audio" preload="metadata" crossorigin="anonymous"></audio>
-
-<script>
-(function(){
-  const $ = s => document.querySelector(s);
-  const listEl = $("#list");
-  const audio = $("#audio");
-  const btnPlay = $("#btnPlay"), btnPrev=$("#btnPrev"), btnNext=$("#btnNext");
-  const btnShuffle=$("#btnShuffle"), btnRepeat=$("#btnRepeat"), btnStop=$("#btnStop");
-  const btnMute=$("#btnMute"), vol=$("#vol");
-  const seekBar=$("#seekBar"), seekFill=$("#seekFill"), seekThumb=$("#seekThumb");
-  const cur=$("#cur"), dur=$("#dur"), trackName=$("#trackName"), artistName=$("#artistName"), cover=$("#cover");
-  const drop=$("#drop"), fileInput=$("#file"), statusEl=$("#status"), modeEl=$("#mode");
-
-  /** Playlist State **/
-  let playlist = [];     // {id, title, artist, url/objectURL, file?, duration?}
-  let index = -1;
-  let shuffle = false;
-  let repeatMode = "off"; // off | one | all
-  let draggingSeek = false;
-  let historyStack = [];
-
-  // Demo: अगर folder में ये फाइलें हों तो नाम से चला देगा
-  // चाहो तो यहाँ अपनी फाइलों के नाम/URL डाल दो
-  const demoSeeds = [
-    { title:"Doremon Theme", artist:"Local", url:"doremon.mp3" },
-    { title:"Song 2", artist:"Local", url:"song2.mp3" },
-    { title:"Song 3", artist:"Local", url:"song3.mp3" },
-  ];
-
-  // Try to pre-add demo seeds (won't break if not found; load error handled)
-  demoSeeds.forEach(s => addTrack(s));
-
-  function humanTime(sec){
-    if(!isFinite(sec)) return "00:00";
-    sec = Math.max(0, Math.floor(sec));
-    const m = Math.floor(sec/60).toString().padStart(2,'0');
-    const s = (sec%60).toString().padStart(2,'0');
-    return `${m}:${s}`;
-  }
-
-  function updateListUI(){
-    listEl.innerHTML = "";
-    playlist.forEach((t,i)=>{
-      const li = document.createElement("li");
-      li.className = "item" + (i===index ? " active":"");
-      li.dataset.i = i;
-      const dur = t.duration? humanTime(t.duration) : "";
-      li.innerHTML = `
-        <div class="ix">${i===index? "▶": (i+1)}</div>
-        <div>
-          <div style="font-weight:700">${t.title || "Untitled"}</div>
-          <div class="small muted">${t.artist || "Unknown"}</div>
-        </div>
-        <div class="small muted">${dur}</div>
-      `;
-      li.onclick = ()=> playAt(i);
-      listEl.appendChild(li);
-    });
-  }
-
-  function setStatus(s){ statusEl.textContent = s; }
-
-  function setMeta(track){
-    trackName.textContent = track?.title || "Untitled";
-    artistName.textContent = track?.artist || "Unknown";
-    // cover: initials
-    const initials = (track?.title || "?").split(/\s+/).slice(0,2).map(x=>x[0]||"").join("").toUpperCase();
-    cover.textContent = initials || "♪";
-  }
-
-  function playAt(i){
-    if(i<0 || i>=playlist.length) return;
-    index = i;
-    const t = playlist[index];
-    audio.src = t.url;
-    audio.play().catch(()=>{}); // autoplay may be blocked
-    setMeta(t); setStatus("Loading…");
-    updateListUI();
-    if('mediaSession' in navigator){
-      navigator.mediaSession.metadata = new MediaMetadata({
-        title: t.title || "Track",
-        artist: t.artist || "Unknown",
-        album: "Playlist",
-        artwork: [{src:"",sizes:"512x512",type:"image/png"}]
-      });
-    }
-  }
-
-  function nextTrack(user=true){
-    if(!playlist.length) return;
-    if(repeatMode==="one"){ return playAt(index); }
-    if(shuffle){
-      // avoid immediate repeat: pick random except current
-      let j = Math.floor(Math.random()*playlist.length);
-      if(playlist.length>1){
-        while(j===index){ j = Math.floor(Math.random()*playlist.length); }
-      }
-      historyStack.push(index);
-      playAt(j); return;
-    }
-    let j = index+1;
-    if(j>=playlist.length){
-      if(repeatMode==="all"){ j = 0; } else { audio.pause(); setStatus("Ended"); return; }
-    }
-    historyStack.push(index);
-    playAt(j);
-  }
-
-  function prevTrack(){
-    if(historyStack.length){
-      const j = historyStack.pop();
-      playAt(j); return;
-    }
-    const j = Math.max(0, index-1);
-    playAt(j);
-  }
-
-  function togglePlay(){
-    if(audio.paused) audio.play().catch(()=>{}); else audio.pause();
-  }
-
-  function setShuffle(v){
-    shuffle = v;
-    modeEl.textContent = shuffle? "Shuffle" : (repeatMode==="one"?"Repeat One":repeatMode==="all"?"Repeat All":"Normal");
-    btnShuffle.style.outline = shuffle? "2px solid var(--accent2)":"none";
-  }
-  function cycleRepeat(){
-    repeatMode = repeatMode==="off" ? "one" : repeatMode==="one" ? "all" : "off";
-    modeEl.textContent = shuffle? "Shuffle" : (repeatMode==="one"?"Repeat One":repeatMode==="all"?"Repeat All":"Normal");
-    btnRepeat.style.outline = repeatMode!=="off" ? "2px solid var(--accent2)" : "none";
-  }
-
-  function addTrack(obj){
-    const t = {
-      id: crypto.randomUUID(),
-      title: obj.title || (obj.file? obj.file.name.replace(/\.[^/.]+$/,"") : "Untitled"),
-      artist: obj.artist || (obj.file? "Local File" : "Unknown"),
-      url: obj.url,
-      file: obj.file || null,
-      duration: null
-    };
-    playlist.push(t);
-    // probe duration once metadata loads (without playing)
-    const p = new Audio();
-    p.src = t.url;
-    p.preload = "metadata";
-    p.addEventListener("loadedmetadata",()=>{
-      t.duration = p.duration;
-      updateListUI();
-    }, {once:true});
-    updateListUI();
-    if(index===-1) { playAt(0); }
-  }
-
-  // File input / drag & drop
-  fileInput.addEventListener("change", (e)=>{
-    [...e.target.files].forEach(file=>{
-      const url = URL.createObjectURL(file);
-      addTrack({file, url});
-    });
-    fileInput.value = "";
-  });
-  drop.addEventListener("dragover", e=>{ e.preventDefault(); drop.classList.add("drag"); });
-  drop.addEventListener("dragleave", ()=> drop.classList.remove("drag"));
-  drop.addEventListener("drop", e=>{
-    e.preventDefault(); drop.classList.remove("drag");
-    const files = [...e.dataTransfer.files].filter(f=>/^audio\/(mpeg|mp3)$/.test(f.type) || /\.mp3$/i.test(f.name));
-    files.forEach(file=> addTrack({file, url:URL.createObjectURL(file)}));
-  });
-
-  // Seek handling
-  function percentFromEvent(e, el){
-    const rect = el.getBoundingClientRect();
-    const x = (e.clientX ?? (e.touches?.[0]?.clientX || 0)) - rect.left;
-    return Math.min(1, Math.max(0, x/rect.width));
-  }
-  function renderSeek(){
-    const p = isFinite(audio.duration) && audio.duration>0 ? (audio.currentTime / audio.duration) : 0;
-    seekFill.style.right = `${100 - p*100}%`;
-    seekThumb.style.left = `${p*100}%`;
-    cur.textContent = humanTime(audio.currentTime);
-    dur.textContent = humanTime(audio.duration);
-  }
-  seekBar.addEventListener("mousedown", e=>{ draggingSeek=true; const p=percentFromEvent(e,seekBar); audio.currentTime = p*audio.duration; renderSeek(); });
-  window.addEventListener("mousemove", e=>{ if(!draggingSeek) return; const p=percentFromEvent(e,seekBar); audio.currentTime = p*audio.duration; renderSeek(); });
-  window.addEventListener("mouseup", ()=> draggingSeek=false);
-  // touch
-  seekBar.addEventListener("touchstart", e=>{ draggingSeek=true; const p=percentFromEvent(e,seekBar); audio.currentTime = p*audio.duration; renderSeek(); }, {passive:true});
-  window.addEventListener("touchmove", e=>{ if(!draggingSeek) return; const p=percentFromEvent(e,seekBar); audio.currentTime = p*audio.duration; renderSeek(); }, {passive:true});
-  window.addEventListener("touchend", ()=> draggingSeek=false);
-
-  // Volume
-  vol.addEventListener("input", ()=>{ audio.volume = +vol.value; btnMute.textContent = audio.volume===0?"🔇":"🔈"; });
-  btnMute.addEventListener("click", ()=>{
-    if(audio.muted || audio.volume===0){ audio.muted=false; audio.volume = Math.max(+vol.value || 0.6, 0.6); vol.value = audio.volume; btnMute.textContent="🔈"; }
-    else { audio.muted=true; btnMute.textContent="🔇"; }
-  });
-
-  // Buttons
-  btnPlay.addEventListener("click", togglePlay);
-  btnPrev.addEventListener("click", prevTrack);
-  btnNext.addEventListener("click", ()=> nextTrack(true));
-  btnShuffle.addEventListener("click", ()=> setShuffle(!shuffle));
-  btnRepeat.addEventListener("click", cycleRepeat);
-  btnStop.addEventListener("click", ()=>{ audio.pause(); audio.currentTime=0; setStatus("Stopped"); });
-
-  // Keyboard shortcuts
-  window.addEventListener("keydown", e=>{
-    if(e.target.closest("input,textarea")) return;
-    if(e.key===" "){ e.preventDefault(); togglePlay(); }
-    else if(e.key.toLowerCase()==="n") nextTrack();
-    else if(e.key.toLowerCase()==="p") prevTrack();
-    else if(e.key.toLowerCase()==="s") setShuffle(!shuffle);
-    else if(e.key.toLowerCase()==="r") cycleRepeat();
-    else if(e.key==="ArrowRight"){ audio.currentTime = Math.min(audio.currentTime+5, audio.duration||audio.currentTime); }
-    else if(e.key==="ArrowLeft"){ audio.currentTime = Math.max(audio.currentTime-5, 0); }
-    else if(e.key==="ArrowUp"){ audio.volume = Math.min(1, (audio.volume||0)+0.05); vol.value = audio.volume; }
-    else if(e.key==="ArrowDown"){ audio.volume = Math.max(0, (audio.volume||0)-0.05); vol.value = audio.volume; }
-    else if((e.ctrlKey||e.metaKey) && e.key.toLowerCase()==="o"){ e.preventDefault(); fileInput.click(); }
-  });
-
-  // Audio events
-  audio.addEventListener("play", ()=>{ btnPlay.textContent="⏸"; setStatus("Playing"); updateListUI(); });
-  audio.addEventListener("pause", ()=>{ btnPlay.textContent="▶"; setStatus("Paused"); updateListUI(); });
-  audio.addEventListener("timeupdate", renderSeek);
-  audio.addEventListener("loadedmetadata", renderSeek);
-  audio.addEventListener("ended", ()=>{ setStatus("Ended"); nextTrack(false); });
-
-  // Media Session (lockscreen / hardware buttons)
-  if('mediaSession' in navigator){
-    navigator.mediaSession.setActionHandler("play", ()=> audio.play());
-    navigator.mediaSession.setActionHandler("pause", ()=> audio.pause());
-    navigator.mediaSession.setActionHandler("previoustrack", prevTrack);
-    navigator.mediaSession.setActionHandler("nexttrack", ()=> nextTrack(true));
-    navigator.mediaSession.setActionHandler("seekbackward", (d)=> audio.currentTime = Math.max(0, audio.currentTime - (d.seekOffset||5)));
-    navigator.mediaSession.setActionHandler("seekforward", (d)=> audio.currentTime = Math.min(audio.duration||1e9, audio.currentTime + (d.seekOffset||5)));
-  }
-
-  // Initial UI render
-  updateListUI();
-  renderSeek();
-})();
-</script>
+  <script src="script.js"></script>
 </body>
+
 </html>
+
+
